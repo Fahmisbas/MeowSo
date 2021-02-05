@@ -1,4 +1,4 @@
-package com.revelatestudio.meowso.ui.auth
+package com.revelatestudio.meowso.ui.auth.signin
 
 import android.app.Activity
 import android.content.Intent
@@ -17,8 +17,11 @@ import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.databinding.ActivityAuthBinding
+import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
 import com.revelatestudio.meowso.ui.home.HomeActivity
 import com.revelatestudio.meowso.util.afterTextChanged
+import com.revelatestudio.meowso.util.makeToast
+import com.revelatestudio.meowso.util.navigateToActivity
 
 
 class AuthActivity : AppCompatActivity() {
@@ -26,7 +29,6 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthBinding
     private lateinit var loginViewModel: AuthViewModel
     private lateinit var auth: FirebaseAuth
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,40 +40,47 @@ class AuthActivity : AppCompatActivity() {
         observeLoginFormState()
         observeLoginResult()
 
-        binding.email.afterTextChanged {
-            loginViewModel.loginDataChanged(
-                binding.email.text.toString(),
-                binding.password.text.toString()
-            )
-        }
-
-        binding.password.apply {
-            afterTextChanged {
+        with(binding) {
+            email.afterTextChanged {
                 loginViewModel.loginDataChanged(
-                    binding.email.text.toString(),
-                    binding.password.text.toString()
+                    email.text.toString(),
+                    password.text.toString()
                 )
             }
 
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        login(
-                            binding.email.text.toString(),
-                            binding.password.text.toString()
-                        )
+            password.apply {
+                afterTextChanged {
+                    loginViewModel.loginDataChanged(
+                        email.text.toString(),
+                        password.text.toString()
+                    )
                 }
-                false
+
+                setOnEditorActionListener { _, actionId, _ ->
+                    when (actionId) {
+                        EditorInfo.IME_ACTION_DONE ->
+                            login(
+                                email.text.toString(),
+                                password.text.toString()
+                            )
+                    }
+                    false
+                }
+
+                signIn.setOnClickListener {
+                    loading.visibility = View.VISIBLE
+                    login(
+                        email.text.toString(),
+                        password.text.toString()
+                    )
+                }
             }
 
-            binding.signIn.setOnClickListener {
-                binding.loading.visibility = View.VISIBLE
-                login(
-                    binding.email.text.toString(),
-                    binding.password.text.toString()
-                )
+            signUp.setOnClickListener {
+                navigateToActivity(this@AuthActivity, SignUpActivity::class.java)
             }
         }
+
     }
 
     private fun initFirebaseAuth() {
@@ -85,11 +94,11 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        // check if the user is already logged in
         val currentUser = auth.currentUser
         currentUser?.let { user ->
-            user.email?.let { email ->
-                val loggedInUserView = LoggedInUserView(user.uid)
-                navigateToHomeActivity(loggedInUserView)
+            user.email?.let {
+                loginViewModel.setLoginResult(LoggedInUser(user.uid, it))
             }
         }
     }
@@ -99,14 +108,16 @@ class AuthActivity : AppCompatActivity() {
         loginViewModel.loginFormState.observe(this@AuthActivity, Observer { state ->
             val loginState = state ?: return@Observer
 
-            // disable login button unless both username / password is valid
-            binding.signIn.isEnabled = loginState.isDataValid
+            with(binding) {
+                // disable login button unless both username / password is valid
+                signIn.isEnabled = loginState.isDataValid
 
-            if (loginState.usernameError != null) {
-                binding.email.error = getString(loginState.usernameError)
-            }
-            if (loginState.passwordError != null) {
-                binding.password.error = getString(loginState.passwordError)
+                if (loginState.usernameError != null) {
+                    email.error = getString(loginState.usernameError)
+                }
+                if (loginState.passwordError != null) {
+                    password.error = getString(loginState.passwordError)
+                }
             }
         })
     }
@@ -125,6 +136,7 @@ class AuthActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun observeLoginResult() {
         loginViewModel.loginResult.observe(this@AuthActivity, Observer { result ->
             val loginResult = result ?: return@Observer
@@ -150,8 +162,7 @@ class AuthActivity : AppCompatActivity() {
         val displayName = model.displayName
         Toast.makeText(applicationContext, "$welcome $displayName", Toast.LENGTH_LONG).show()
 
-        val intent = Intent(this, HomeActivity::class.java)
-        startActivity(intent)
+        navigateToActivity(this, HomeActivity::class.java)
 
         setResult(Activity.RESULT_OK)
 
@@ -159,9 +170,6 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
-        Toast.makeText(this, errorString, Toast.LENGTH_SHORT).show()
+        makeToast(resources.getString(errorString))
     }
 }
-
-
-

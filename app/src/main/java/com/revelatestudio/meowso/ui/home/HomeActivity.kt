@@ -16,11 +16,9 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
         binding.logout.setOnClickListener {
             Firebase.auth.signOut()
             finish()
         }
     }
-
 }

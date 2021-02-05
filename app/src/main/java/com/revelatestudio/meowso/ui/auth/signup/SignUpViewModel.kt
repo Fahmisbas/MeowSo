@@ -1,40 +1,40 @@
-package com.revelatestudio.meowso.ui.auth
+package com.revelatestudio.meowso.ui.auth.signup
 
-import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
-import com.revelatestudio.meowso.data.dataholder.auth.LoginResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
+import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
+import com.revelatestudio.meowso.data.dataholder.auth.LoginResult
 
-class AuthViewModel() : ViewModel(){
+class SignUpViewModel : ViewModel(){
 
-    private val _loginForm = MutableLiveData<LoginFormState>()
-    val loginFormState: LiveData<LoginFormState> = _loginForm
+    private val _signUpForm = MutableLiveData<LoginFormState>()
+    val signUpFormState: LiveData<LoginFormState> = _signUpForm
 
-    private val _loginResult = MutableLiveData<LoginResult>()
-    val loginResult: LiveData<LoginResult> = _loginResult
+    private val _signUpResult = MutableLiveData<LoginResult>()
+    val signUpResult : LiveData<LoginResult> = _signUpResult
 
-    fun setLoginResult(loggedInUser: LoggedInUser?) {
+
+    fun setSignUpResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser != null) {
-            _loginResult.value =
+            _signUpResult.value =
                 LoginResult(success = LoggedInUserView(displayName = loggedInUser.displayName))
         } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+            _signUpResult.value = LoginResult(error = R.string.login_failed)
         }
     }
 
-    fun loginDataChanged(username: String, password: String) {
+    fun signUpDataChanged(username: String, password: String) {
         if (!isUserNameValid(username)) {
-            _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
+            _signUpForm.value = LoginFormState(usernameError = R.string.invalid_username)
         } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
+            _signUpForm.value = LoginFormState(passwordError = R.string.invalid_password)
         } else {
-            _loginForm.value = LoginFormState(isDataValid = true)
+            _signUpForm.value = LoginFormState(isDataValid = true)
         }
     }
 
@@ -51,6 +51,5 @@ class AuthViewModel() : ViewModel(){
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
     }
-
 
 }
