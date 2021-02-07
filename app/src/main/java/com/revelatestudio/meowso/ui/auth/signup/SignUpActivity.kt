@@ -106,13 +106,13 @@ class SignUpActivity : AppCompatActivity() {
             user.updateProfile(profileUpdates).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     user.apply {
-                        displayName?.let { name ->
-                            email?.let { email ->
-                                photoUrl?.let { photoUrl ->
-                                    val loggedInUser = LoggedInUser(uid, name, email, photoUrl)
-                                    signUpViewModel.setSignUpResult(loggedInUser)
-                                }
-                            }
+                        val uid = uid
+                        val displayName = displayName
+                        val userEmail = email
+                        val photoUrl = photoUrl
+                        if (displayName != null && userEmail != null && photoUrl != null) {
+                            val loggedInUser = LoggedInUser(uid, displayName, userEmail, photoUrl)
+                            signUpViewModel.setSignUpResult(loggedInUser)
                         }
                     }
                 }

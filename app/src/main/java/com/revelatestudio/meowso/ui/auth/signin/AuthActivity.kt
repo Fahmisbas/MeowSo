@@ -85,15 +85,13 @@ class AuthActivity : AppCompatActivity() {
         // check if the user is already logged in
         val currentUser = auth.currentUser
         currentUser?.let { user ->
-            user.apply {
-                displayName?.let { name ->
-                    email?.let { email ->
-                        photoUrl?.let { photoUrl ->
-                            val loggedInUser = LoggedInUser(uid, name, email, photoUrl)
-                            loginViewModel.setLoginResult(loggedInUser)
-                        }
-                    }
-                }
+            val uid = user.uid
+            val displayName = user.displayName
+            val userEmail = user.email
+            val photoUrl = user.photoUrl
+            if (displayName != null && userEmail != null && photoUrl != null) {
+                val loggedInUser = LoggedInUser(uid, displayName, userEmail, photoUrl)
+                loginViewModel.setLoginResult(loggedInUser)
             }
         }
     }
@@ -130,15 +128,13 @@ class AuthActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val currentUser = auth.currentUser
                 currentUser?.let { user ->
-                    user.apply {
-                        displayName?.let { name ->
-                            email.let { email ->
-                                photoUrl?.let { photoUrl ->
-                                    val loggedInUser = LoggedInUser(uid, name, email, photoUrl)
-                                    loginViewModel.setLoginResult(loggedInUser)
-                                }
-                            }
-                        }
+                    val uid = user.uid
+                    val displayName = user.displayName
+                    val userEmail = user.email
+                    val photoUrl = user.photoUrl
+                    if (displayName != null && userEmail != null && photoUrl != null) {
+                        val loggedInUser = LoggedInUser(uid, displayName, userEmail, photoUrl)
+                        loginViewModel.setLoginResult(loggedInUser)
                     }
                 }
             } else {

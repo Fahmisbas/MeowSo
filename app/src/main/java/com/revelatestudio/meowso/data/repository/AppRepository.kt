@@ -17,7 +17,7 @@ class AppRepository(private val firebaseDb: FirebaseFirestore) {
                     KEY_PHOTO_URL to photoUrl.toString(),
                     KEY_CREATED_DATE to getCurrentDateTime().toStringFormat(DATE_FORMAT)
                 )
-                firebaseDb.collection(USER_COLLECTION).add(user)
+                firebaseDb.collection(USER_COLLECTION).document(userId).set(user)
                     .addOnSuccessListener {
                         isSuccessful.invoke(true)
                     }
