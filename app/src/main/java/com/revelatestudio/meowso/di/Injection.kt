@@ -1,10 +1,11 @@
 package com.revelatestudio.meowso.di
 
+import com.google.firebase.firestore.FirebaseFirestore
+import com.revelatestudio.meowso.data.repository.AppRepository
+
 
 object Injection {
-
-//    fun provideRepository(auth : FirebaseAuth,activity: AuthActivity) : AppRepository {
-//        val loginDataSource = LoginDataSource.getInstance(auth, activity)
-//        return AppRepository.getInstance(loginDataSource)
-//    }
+    fun provideRepository(firebaseDb: FirebaseFirestore): AppRepository {
+        return AppRepository.getInstance(firebaseDb)
+    }
 }

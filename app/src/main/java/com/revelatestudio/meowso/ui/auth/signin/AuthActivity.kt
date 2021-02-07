@@ -1,12 +1,9 @@
 package com.revelatestudio.meowso.ui.auth.signin
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
-
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -20,8 +17,8 @@ import com.revelatestudio.meowso.databinding.ActivityAuthBinding
 import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
 import com.revelatestudio.meowso.ui.home.HomeActivity
 import com.revelatestudio.meowso.util.afterTextChanged
-import com.revelatestudio.meowso.util.makeToast
 import com.revelatestudio.meowso.util.navigateToActivity
+import com.revelatestudio.meowso.util.showToast
 
 
 class AuthActivity : AppCompatActivity() {
@@ -83,6 +80,24 @@ class AuthActivity : AppCompatActivity() {
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        // check if the user is already logged in
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            user.apply {
+                displayName?.let { name ->
+                    email?.let { email ->
+                        photoUrl?.let { photoUrl ->
+                            val loggedInUser = LoggedInUser(uid, name, email, photoUrl)
+                            loginViewModel.setLoginResult(loggedInUser)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun initFirebaseAuth() {
         FirebaseApp.initializeApp(this)
         auth = FirebaseAuth.getInstance()
@@ -91,18 +106,6 @@ class AuthActivity : AppCompatActivity() {
     private fun initViewModel() {
         loginViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
     }
-
-    override fun onStart() {
-        super.onStart()
-        // check if the user is already logged in
-        val currentUser = auth.currentUser
-        currentUser?.let { user ->
-            user.email?.let {
-                loginViewModel.setLoginResult(LoggedInUser(user.uid, it))
-            }
-        }
-    }
-
 
     private fun observeLoginFormState() {
         loginViewModel.loginFormState.observe(this@AuthActivity, Observer { state ->
@@ -127,8 +130,15 @@ class AuthActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val currentUser = auth.currentUser
                 currentUser?.let { user ->
-                    user.email?.let {
-                        loginViewModel.setLoginResult(LoggedInUser(user.uid, it))
+                    user.apply {
+                        displayName?.let { name ->
+                            email.let { email ->
+                                photoUrl?.let { photoUrl ->
+                                    val loggedInUser = LoggedInUser(uid, name, email, photoUrl)
+                                    loginViewModel.setLoginResult(loggedInUser)
+                                }
+                            }
+                        }
                     }
                 }
             } else {
@@ -138,7 +148,7 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun observeLoginResult() {
-        loginViewModel.loginResult.observe(this@AuthActivity, Observer { result ->
+        loginViewModel.authResult.observe(this@AuthActivity, Observer { result ->
             val loginResult = result ?: return@Observer
 
             binding.loading.visibility = View.GONE
@@ -147,29 +157,25 @@ class AuthActivity : AppCompatActivity() {
             }
             if (loginResult.success != null) {
                 navigateToHomeActivity(loginResult.success)
+
+                setResult(Activity.RESULT_OK)
+                //Complete and destroy login activity once successful
+                finish()
             }
-            setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
         })
-
     }
-
 
     private fun navigateToHomeActivity(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)
         val displayName = model.displayName
-        Toast.makeText(applicationContext, "$welcome $displayName", Toast.LENGTH_LONG).show()
-
+        showToast("$welcome $displayName")
         navigateToActivity(this, HomeActivity::class.java)
 
         setResult(Activity.RESULT_OK)
-
         finish()
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
-        makeToast(resources.getString(errorString))
+        showToast(resources.getString(errorString))
     }
 }

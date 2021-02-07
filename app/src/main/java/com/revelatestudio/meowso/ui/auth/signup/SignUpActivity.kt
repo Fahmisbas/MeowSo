@@ -1,36 +1,41 @@
 package com.revelatestudio.meowso.ui.auth.signup
 
 import android.app.Activity
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
+import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.home.HomeActivity
 import com.revelatestudio.meowso.util.afterTextChanged
-import com.revelatestudio.meowso.util.makeToast
 import com.revelatestudio.meowso.util.navigateToActivity
+import com.revelatestudio.meowso.util.showToast
 
 class SignUpActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivitySignUpBinding
-    private lateinit var auth: FirebaseAuth
-    private lateinit var signUpViewModel : SignUpViewModel
+    private lateinit var binding: ActivitySignUpBinding
+    private lateinit var signUpViewModel: SignUpViewModel
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firebaseDb = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initFirebaseAuth()
         initViewModel()
         observeSignUpFormState()
         observeSignUpResult()
@@ -73,12 +78,9 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    private fun initFirebaseAuth() {
-        auth = FirebaseAuth.getInstance()
-    }
-
     private fun initViewModel() {
-        signUpViewModel = ViewModelProvider(this).get(SignUpViewModel::class.java)
+        val factory = ViewModelFactory.getInstance(firebaseDb)
+        signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
     }
 
     private fun createAccount(email: String, password: String) {
@@ -86,16 +88,38 @@ class SignUpActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val currentUser = auth.currentUser
-                    currentUser?.let {  user ->
-                        user.email?.let {
-                            signUpViewModel.setSignUpResult(LoggedInUser(user.uid, it))
-                        }
+                    if (currentUser != null) {
+                        updateUserProfile(currentUser)
                     }
                 } else {
-                   signUpViewModel.setSignUpResult(null)
+                    signUpViewModel.setSignUpResult(null)
                 }
             }
     }
+
+    private fun updateUserProfile(user: FirebaseUser) {
+        with(binding) {
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(catName.text.toString())
+                .setPhotoUri(Uri.parse(DEFAULT_PROFILE_PICTURE_URL))
+                .build()
+            user.updateProfile(profileUpdates).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    user.apply {
+                        displayName?.let { name ->
+                            email?.let { email ->
+                                photoUrl?.let { photoUrl ->
+                                    val loggedInUser = LoggedInUser(uid, name, email, photoUrl)
+                                    signUpViewModel.setSignUpResult(loggedInUser)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun observeSignUpFormState() {
         signUpViewModel.signUpFormState.observe(this@SignUpActivity, Observer { state ->
@@ -120,33 +144,40 @@ class SignUpActivity : AppCompatActivity() {
             val loginResult = result ?: return@Observer
 
             binding.loading.visibility = View.GONE
+
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
+
             if (loginResult.success != null) {
+
                 navigateToHomeActivity(loginResult.success)
+                setResult(RESULT_OK)
+                //Complete and destroy login activity once successful
+                finish()
             }
-            setResult(RESULT_OK)
-
-            //Complete and destroy login activity once successful
-            finish()
         })
-
     }
 
-    private fun showLoginFailed(@StringRes errorString : Int) {
-        makeToast(resources.getString(errorString))
+
+    private fun showLoginFailed(@StringRes errorString: Int) {
+        showToast(resources.getString(errorString))
     }
 
     private fun navigateToHomeActivity(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)
         val displayName = model.displayName
-        Toast.makeText(applicationContext, "$welcome $displayName", Toast.LENGTH_LONG).show()
 
+        showToast("$welcome $displayName")
         navigateToActivity(this, HomeActivity::class.java)
 
         setResult(Activity.RESULT_OK)
-
         finish()
+    }
+
+    companion object {
+        private const val token = "964cc4b4-682a-4209-900b-ee109f247c6a"
+        private val DEFAULT_PROFILE_PICTURE_URL: String
+            get() = "https://firebasestorage.googleapis.com/v0/b/meowso-9c708.appspot.com/o/profile%2Fdefault-user-profile-picture.jpg?alt=media&token=$token"
     }
 }

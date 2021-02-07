@@ -5,26 +5,37 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.revelatestudio.meowso.R
+import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
-import com.revelatestudio.meowso.data.dataholder.auth.LoginResult
+import com.revelatestudio.meowso.data.repository.AppRepository
 
-class SignUpViewModel : ViewModel(){
+class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
 
     private val _signUpForm = MutableLiveData<LoginFormState>()
     val signUpFormState: LiveData<LoginFormState> = _signUpForm
 
-    private val _signUpResult = MutableLiveData<LoginResult>()
-    val signUpResult : LiveData<LoginResult> = _signUpResult
-
+    private val _signUpResult = MutableLiveData<AuthResult>()
+    val signUpResult: LiveData<AuthResult> = _signUpResult
 
     fun setSignUpResult(loggedInUser: LoggedInUser?) {
-        if (loggedInUser != null) {
-            _signUpResult.value =
-                LoginResult(success = LoggedInUserView(displayName = loggedInUser.displayName))
-        } else {
-            _signUpResult.value = LoginResult(error = R.string.login_failed)
+        if (loggedInUser?.userId != null) {
+            repository.storeUserInfoIntoFireStoreDB(loggedInUser) { isSuccessful ->
+                if (isSuccessful) {
+                    loggedInUser.apply {
+                        _signUpResult.value = AuthResult(
+                            success = LoggedInUserView(
+                                displayName = displayName,
+                                email = email,
+                                photoUrl = photoUrl
+                            )
+                        )
+                    }
+                } else {
+                    _signUpResult.value = AuthResult(error = R.string.login_failed)
+                }
+            }
         }
     }
 
@@ -51,5 +62,4 @@ class SignUpViewModel : ViewModel(){
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
     }
-
 }

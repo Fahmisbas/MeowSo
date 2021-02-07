@@ -5,25 +5,31 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
-import com.revelatestudio.meowso.data.dataholder.auth.LoginResult
+import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
+import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
 
-class AuthViewModel() : ViewModel(){
+class AuthViewModel() : ViewModel() {
 
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
-    private val _loginResult = MutableLiveData<LoginResult>()
-    val loginResult: LiveData<LoginResult> = _loginResult
+    private val _loginResult = MutableLiveData<AuthResult>()
+    val authResult: LiveData<AuthResult> = _loginResult
 
     fun setLoginResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser != null) {
             _loginResult.value =
-                LoginResult(success = LoggedInUserView(displayName = loggedInUser.displayName))
+                AuthResult(
+                    success = LoggedInUserView(
+                        displayName = loggedInUser.displayName,
+                        loggedInUser.email,
+                        loggedInUser.photoUrl
+                    )
+                )
         } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+            _loginResult.value = AuthResult(error = R.string.login_failed)
         }
     }
 
