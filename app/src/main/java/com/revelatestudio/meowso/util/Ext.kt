@@ -30,13 +30,23 @@ fun <T> Activity.navigateToActivity(origin: Activity, destination: Class<T>) {
 }
 
 /**
- * Extension function to show Toast message
+ * Show Toast message
  */
 fun Context.showToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
 
+/**
+ * format date
+ */
 fun Date.toStringFormat(format: String, locale: Locale = Locale.getDefault()): String {
     val formatter = SimpleDateFormat(format, locale)
     return formatter.format(this)
+}
+
+/**
+ * Remove space in string
+ */
+fun String.removeWhiteSpaces(): String {
+    return replace("\\s".toRegex(), "")
 }

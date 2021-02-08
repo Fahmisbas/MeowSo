@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
 import com.revelatestudio.meowso.data.repository.AppRepository
 
@@ -20,16 +19,17 @@ class AuthViewModel(private val repository: AppRepository) : ViewModel() {
     private val _loginResult = MutableLiveData<AuthResult>()
     val authResult: LiveData<AuthResult> = _loginResult
 
+    fun setLoggedInUser(currentUser: FirebaseUser?) {
+        if (currentUser != null) {
+            repository.setLoggedInUser(currentUser) {
+                setLoginResult(it)
+            }
+        }
+    }
+
     fun setLoginResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser != null) {
-            _loginResult.value =
-                AuthResult(
-                    success = LoggedInUserView(
-                        displayName = loggedInUser.displayName,
-                        loggedInUser.email,
-                        loggedInUser.photoUrl
-                    )
-                )
+            _loginResult.value = AuthResult(success = loggedInUser)
         } else {
             _loginResult.value = AuthResult(error = R.string.login_failed)
         }
@@ -58,14 +58,4 @@ class AuthViewModel(private val repository: AppRepository) : ViewModel() {
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
     }
-
-    fun setLoggedInUser(currentUser: FirebaseUser?) {
-        if (currentUser != null) {
-            repository.setLoggedInUser(currentUser) {
-                setLoginResult(it)
-            }
-        }
-    }
-
-
 }

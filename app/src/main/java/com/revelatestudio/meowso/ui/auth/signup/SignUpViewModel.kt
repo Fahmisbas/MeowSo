@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
 import com.revelatestudio.meowso.data.repository.AppRepository
 
@@ -20,9 +19,9 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     private val _signUpResult = MutableLiveData<AuthResult>()
     val signUpResult: LiveData<AuthResult> = _signUpResult
 
-    fun setUserProfile(currentUser: FirebaseUser, catName: String) {
-        repository.setUserProfile(currentUser, catName) {
-            setSignUpResult(it)
+    fun setDefaultUserProfile(currentUser: FirebaseUser, catName: String) {
+        repository.setDefaultUserProfile(currentUser, catName) { data ->
+            setSignUpResult(data)
         }
     }
 
@@ -32,11 +31,7 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
                 if (isSuccessful) {
                     loggedInUser.apply {
                         _signUpResult.value = AuthResult(
-                            success = LoggedInUserView(
-                                displayName = displayName,
-                                email = email,
-                                photoUrl = photoUrl
-                            )
+                            success = this
                         )
                     }
                 } else {

@@ -11,10 +11,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
+import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
-import com.revelatestudio.meowso.ui.home.HomeActivity
+import com.revelatestudio.meowso.ui.navigation.NavigationActivity
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.navigateToActivity
 import com.revelatestudio.meowso.util.showToast
@@ -23,9 +23,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var signUpViewModel: SignUpViewModel
-
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val firebaseDb = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,25 +73,10 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
+        val firebaseDb = FirebaseFirestore.getInstance()
         val factory = ViewModelFactory.getInstance(firebaseDb)
         signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
     }
-
-    private fun createAccount(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val currentUser = auth.currentUser
-                    if (currentUser != null) {
-                        val catName = binding.catName.text.toString()
-                        signUpViewModel.setUserProfile(currentUser, catName)
-                    }
-                } else {
-                    signUpViewModel.setSignUpResult(null)
-                }
-            }
-    }
-
 
     private fun observeSignUpFormState() {
         signUpViewModel.signUpFormState.observe(this@SignUpActivity, Observer { state ->
@@ -112,6 +95,22 @@ class SignUpActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun createAccount(email: String, password: String) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val currentUser = auth.currentUser
+                    if (currentUser != null) {
+                        val catName = binding.catName.text.toString()
+                        signUpViewModel.setDefaultUserProfile(currentUser, catName)
+                    }
+                } else {
+                    signUpViewModel.setSignUpResult(null)
+                }
+            }
+    }
+
 
     private fun observeSignUpResult() {
         signUpViewModel.signUpResult.observe(this@SignUpActivity, Observer { result ->
@@ -138,12 +137,12 @@ class SignUpActivity : AppCompatActivity() {
         showToast(resources.getString(errorString))
     }
 
-    private fun navigateToHomeActivity(model: LoggedInUserView) {
+    private fun navigateToHomeActivity(model: LoggedInUser) {
         val welcome = getString(R.string.welcome)
         val displayName = model.displayName
 
         showToast("$welcome $displayName")
-        navigateToActivity(this, HomeActivity::class.java)
+        navigateToActivity(this, NavigationActivity::class.java)
 
         setResult(Activity.RESULT_OK)
         finish()

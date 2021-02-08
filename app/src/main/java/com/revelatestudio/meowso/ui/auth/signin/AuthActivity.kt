@@ -12,11 +12,11 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
+import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivityAuthBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
-import com.revelatestudio.meowso.ui.home.HomeActivity
+import com.revelatestudio.meowso.ui.navigation.NavigationActivity
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.navigateToActivity
 import com.revelatestudio.meowso.util.showToast
@@ -149,11 +149,11 @@ class AuthActivity : AppCompatActivity() {
         })
     }
 
-    private fun navigateToHomeActivity(model: LoggedInUserView) {
+    private fun navigateToHomeActivity(model: LoggedInUser) {
         val welcome = getString(R.string.welcome)
         val displayName = model.displayName
         showToast("$welcome $displayName")
-        navigateToActivity(this, HomeActivity::class.java)
+        navigateToActivity(this, NavigationActivity::class.java)
 
         setResult(Activity.RESULT_OK)
         finish()
