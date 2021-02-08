@@ -1,7 +1,6 @@
 package com.revelatestudio.meowso.ui.auth.signup
 
 import android.app.Activity
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -10,11 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
@@ -89,35 +85,13 @@ class SignUpActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val currentUser = auth.currentUser
                     if (currentUser != null) {
-                        updateUserProfile(currentUser)
+                        val catName = binding.catName.text.toString()
+                        signUpViewModel.setUserProfile(currentUser, catName)
                     }
                 } else {
                     signUpViewModel.setSignUpResult(null)
                 }
             }
-    }
-
-    private fun updateUserProfile(user: FirebaseUser) {
-        with(binding) {
-            val profileUpdates = UserProfileChangeRequest.Builder()
-                .setDisplayName(catName.text.toString())
-                .setPhotoUri(Uri.parse(DEFAULT_PROFILE_PICTURE_URL))
-                .build()
-            user.updateProfile(profileUpdates).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    user.apply {
-                        val uid = uid
-                        val displayName = displayName
-                        val userEmail = email
-                        val photoUrl = photoUrl
-                        if (displayName != null && userEmail != null && photoUrl != null) {
-                            val loggedInUser = LoggedInUser(uid, displayName, userEmail, photoUrl)
-                            signUpViewModel.setSignUpResult(loggedInUser)
-                        }
-                    }
-                }
-            }
-        }
     }
 
 
@@ -176,8 +150,6 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val token = "964cc4b4-682a-4209-900b-ee109f247c6a"
-        private val DEFAULT_PROFILE_PICTURE_URL: String
-            get() = "https://firebasestorage.googleapis.com/v0/b/meowso-9c708.appspot.com/o/profile%2Fdefault-user-profile-picture.jpg?alt=media&token=$token"
+
     }
 }

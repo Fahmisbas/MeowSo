@@ -4,13 +4,15 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseUser
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
+import com.revelatestudio.meowso.data.repository.AppRepository
 
-class AuthViewModel() : ViewModel() {
+class AuthViewModel(private val repository: AppRepository) : ViewModel() {
 
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
@@ -55,6 +57,14 @@ class AuthViewModel() : ViewModel() {
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
+    }
+
+    fun setLoggedInUser(currentUser: FirebaseUser?) {
+        if (currentUser != null) {
+            repository.setLoggedInUser(currentUser) {
+                setLoginResult(it)
+            }
+        }
     }
 
 

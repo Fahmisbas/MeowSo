@@ -10,10 +10,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUserView
 import com.revelatestudio.meowso.databinding.ActivityAuthBinding
+import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
 import com.revelatestudio.meowso.ui.home.HomeActivity
 import com.revelatestudio.meowso.util.afterTextChanged
@@ -84,17 +85,11 @@ class AuthActivity : AppCompatActivity() {
         super.onStart()
         // check if the user is already logged in
         val currentUser = auth.currentUser
-        currentUser?.let { user ->
-            val uid = user.uid
-            val displayName = user.displayName
-            val userEmail = user.email
-            val photoUrl = user.photoUrl
-            if (displayName != null && userEmail != null && photoUrl != null) {
-                val loggedInUser = LoggedInUser(uid, displayName, userEmail, photoUrl)
-                loginViewModel.setLoginResult(loggedInUser)
-            }
+        if (currentUser != null) {
+            loginViewModel.setLoggedInUser(currentUser)
         }
     }
+
 
     private fun initFirebaseAuth() {
         FirebaseApp.initializeApp(this)
@@ -102,7 +97,9 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        loginViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
+        val firebaseDb = FirebaseFirestore.getInstance()
+        val factory = ViewModelFactory.getInstance(firebaseDb)
+        loginViewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
     }
 
     private fun observeLoginFormState() {
@@ -127,16 +124,7 @@ class AuthActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
                 val currentUser = auth.currentUser
-                currentUser?.let { user ->
-                    val uid = user.uid
-                    val displayName = user.displayName
-                    val userEmail = user.email
-                    val photoUrl = user.photoUrl
-                    if (displayName != null && userEmail != null && photoUrl != null) {
-                        val loggedInUser = LoggedInUser(uid, displayName, userEmail, photoUrl)
-                        loginViewModel.setLoginResult(loggedInUser)
-                    }
-                }
+                loginViewModel.setLoggedInUser(currentUser)
             } else {
                 loginViewModel.setLoginResult(null)
             }

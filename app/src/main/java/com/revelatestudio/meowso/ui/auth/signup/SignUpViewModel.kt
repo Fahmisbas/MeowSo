@@ -4,6 +4,7 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseUser
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
@@ -18,6 +19,12 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
 
     private val _signUpResult = MutableLiveData<AuthResult>()
     val signUpResult: LiveData<AuthResult> = _signUpResult
+
+    fun setUserProfile(currentUser: FirebaseUser, catName: String) {
+        repository.setUserProfile(currentUser, catName) {
+            setSignUpResult(it)
+        }
+    }
 
     fun setSignUpResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser?.userId != null) {
