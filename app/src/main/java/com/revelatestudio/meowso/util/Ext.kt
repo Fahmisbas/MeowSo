@@ -47,6 +47,6 @@ fun Date.toStringFormat(format: String, locale: Locale = Locale.getDefault()): S
 /**
  * Remove space in string
  */
-fun String.removeWhiteSpaces(): String {
+fun String.removeWhiteSpace(): String {
     return replace("\\s".toRegex(), "")
 }

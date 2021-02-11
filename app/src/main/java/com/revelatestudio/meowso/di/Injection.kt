@@ -5,7 +5,8 @@ import com.revelatestudio.meowso.data.repository.AppRepository
 
 
 object Injection {
-    fun provideRepository(firebaseDb: FirebaseFirestore): AppRepository {
+    fun provideRepository(): AppRepository {
+        val firebaseDb = FirebaseFirestore.getInstance()
         return AppRepository.getInstance(firebaseDb)
     }
 }
