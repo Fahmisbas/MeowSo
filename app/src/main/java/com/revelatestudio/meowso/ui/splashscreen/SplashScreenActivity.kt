@@ -2,8 +2,6 @@ package com.revelatestudio.meowso.ui.splashscreen
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.revelatestudio.meowso.databinding.ActivitySplashScreenBinding
@@ -22,7 +20,7 @@ class SplashScreenActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initViewModel()
-        getLoggedInUserData()
+        navigateToNavigationActivity()
 
     }
 
@@ -31,26 +29,19 @@ class SplashScreenActivity : AppCompatActivity() {
         splashScreenViewModel = ViewModelProvider(this, factory)[SplashScreenViewModel::class.java]
     }
 
-    private fun getLoggedInUserData() {
+    private fun navigateToNavigationActivity() {
         val uid = intent.getStringExtra(EXTRA_USER_UID)
         if (uid != null) {
-            splashScreenViewModel.getLoggedInUserData(uid)
-            observeLoggedInUserData()
-        }
-    }
-
-    private fun observeLoggedInUserData() {
-        splashScreenViewModel.loggedInUser.observe(this,  { currentUser ->
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (currentUser != null) {
+            splashScreenViewModel.getLoggedInUserData(uid).observe(this, { data ->
+                if (data != null) {
                     Intent(this@SplashScreenActivity, NavigationActivity::class.java).apply {
-                        putExtra(EXTRA_LOGGED_IN_PROFILE, currentUser)
+                        putExtra(EXTRA_LOGGED_IN_PROFILE, data)
                         startActivity(this)
                     }
                 }
                 finish()
-            }, 2000L)
-        })
+            })
+        }
     }
 
     companion object {

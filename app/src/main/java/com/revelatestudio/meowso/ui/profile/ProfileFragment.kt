@@ -5,7 +5,6 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.FragmentProfileBinding
@@ -17,7 +16,6 @@ class ProfileFragment(private val loggedInUser: LoggedInUser) :
 
     private lateinit var binding: FragmentProfileBinding
     private lateinit var profileViewModel: ProfileViewModel
-    private var auth = FirebaseAuth.getInstance()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -45,7 +43,7 @@ class ProfileFragment(private val loggedInUser: LoggedInUser) :
             toolbarProfile.setOnMenuItemClickListener { menu ->
                 if (menu.itemId == R.id.opt_logout) {
                     // Sign out and Navigate to SignInActivity
-                    profileViewModel.signOut(auth, requireActivity())
+                    profileViewModel.logout(requireActivity())
                 }
                 true
             }
@@ -60,10 +58,8 @@ class ProfileFragment(private val loggedInUser: LoggedInUser) :
     private fun displayUserInfo() {
         with(binding) {
             loggedInUser.apply {
-                Glide.with(this@ProfileFragment)
-                    .load(photoUrl)
-                    .into(ivProfilePicture)
-                tvDisplayName.text = displayName
+                Glide.with(this@ProfileFragment).load(photoUrl).into(ivProfilePicture)
+                tvDisplayName.text = userName
                 tvFollowingCount.text = followersCount
                 tvFollowersCount.text = followersCount
                 tvPostsCount.text = postsCount
@@ -71,11 +67,9 @@ class ProfileFragment(private val loggedInUser: LoggedInUser) :
         }
     }
 
-
     companion object {
         @Volatile
         private var instance: ProfileFragment? = null
-
         fun newInstance(loggedInUser: LoggedInUser) =
             instance ?: synchronized(this) {
                 instance ?: ProfileFragment(loggedInUser)

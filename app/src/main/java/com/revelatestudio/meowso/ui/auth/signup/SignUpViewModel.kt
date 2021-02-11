@@ -19,17 +19,26 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     private val _signUpResult = MutableLiveData<AuthResult>()
     val signUpResult: LiveData<AuthResult> = _signUpResult
 
-    fun setDefaultUserProfile(currentUser: FirebaseUser, catName: String) {
-        repository.setInitialUserProfile(currentUser,catName) { data ->
+    fun createAccount(activity: SignUpActivity, catName: String, email: String, password: String) {
+        repository.createAccount(activity, email, password) { currentUser ->
+            if (currentUser != null) {
+                setUserAuthProfile(currentUser, catName)
+            }
+        }
+    }
+
+    private fun setUserAuthProfile(currentUser: FirebaseUser, catName: String) {
+        repository.setUserAuthProfile(currentUser, catName) { data ->
             setSignUpResult(data)
         }
     }
 
-    fun setSignUpResult(loggedInUser: LoggedInUser?) {
+    private fun setSignUpResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser?.uid != null) {
-            repository.storeInitialLoggedInUser(loggedInUser) { isSuccessful ->
+            repository.storeLoggedInUser(loggedInUser) { isSuccessful ->
                 if (isSuccessful) {
-                    loggedInUser.apply { _signUpResult.value = AuthResult(success = this)
+                    loggedInUser.apply {
+                        _signUpResult.value = AuthResult(success = this)
                     }
                 } else {
                     _signUpResult.value = AuthResult(error = R.string.login_failed)
@@ -61,4 +70,5 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
     }
+
 }

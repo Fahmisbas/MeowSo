@@ -26,11 +26,11 @@ class NavigationActivity : AppCompatActivity() {
         loggedInUser = intent.getParcelableExtra(EXTRA_LOGGED_IN_PROFILE)
         setCurrentFragment(HomeFragment.newInstance())
 
-        selectedNavigationItem()
+        onNavigationItem()
 
     }
 
-    private fun selectedNavigationItem() {
+    private fun onNavigationItem() {
         with(binding) {
             bottomNavigation.setOnNavigationItemSelectedListener { item ->
                 when (item.itemId) {

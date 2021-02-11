@@ -24,31 +24,40 @@
 
     <TextView
         android:id="@+id/tv_display_name"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_padding_size_medium"
+        android:layout_margin="@dimen/margin_padding_size_medium"
         android:gravity="center"
         android:textSize="@dimen/text_size_large"
-        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/iv_profile_picture"
-        tools:text="@string/dummy_fullname" />
+        tools:text="Fahmisbas" />
 
     <GridLayout
         android:id="@+id/grid_profile_info"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_padding_size_medium"
+        android:layout_marginStart="@dimen/margin_padding_size_large"
+        android:layout_marginTop="@dimen/margin_padding_size_large"
+        android:layout_marginEnd="@dimen/margin_padding_size_large"
         android:columnCount="3"
         android:rowCount="1"
-        android:useDefaultMargins="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_display_name">
 
 
         <LinearLayout
-            android:layout_margin="10dp"
+            android:layout_columnWeight="1"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_following_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                tools:text="@string/dumy_user_detail_following_followers" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -57,17 +66,18 @@
                 android:text="@string/label_following"
                 android:textStyle="bold" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_columnWeight="1"
+            android:orientation="vertical">
+
             <TextView
-                android:id="@+id/tv_following_count"
+                android:id="@+id/tv_followers_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 tools:text="@string/dumy_user_detail_following_followers" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_margin="10dp"
-            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -76,24 +86,11 @@
                 android:text="@string/label_followers"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tv_followers_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                tools:text="@string/dumy_user_detail_following_followers" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="10dp"
+            android:layout_columnWeight="1"
             android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_posts"
-                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_posts_count"
@@ -101,19 +98,45 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 tools:text="@string/dumy_user_detail_following_followers" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="   Posts  "
+                android:textStyle="bold" />
+
+
         </LinearLayout>
 
     </GridLayout>
 
-
-    <Button
-        android:id="@+id/btn_message"
-        style="@style/Widget.AppCompat.Button.Small"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_padding_size_medium"
-        android:text="@string/edit_profile"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/grid_profile_info" />
+        app:layout_constraintTop_toBottomOf="@id/grid_profile_info">
+
+        <Button
+            android:id="@+id/btn_message"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_padding_size_large"
+            android:layout_marginBottom="@dimen/margin_padding_size_medium"
+            android:text="@string/edit_profile" />
+
+<!--        <Button-->
+<!--            style="@style/Widget.AppCompat.Button.Small"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="@dimen/margin_padding_size_medium"-->
+<!--            android:drawableEnd="@drawable/ic_bookmark"/>-->
+
+
+    </LinearLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

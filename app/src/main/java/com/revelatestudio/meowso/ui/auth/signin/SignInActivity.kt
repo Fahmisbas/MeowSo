@@ -26,14 +26,13 @@ class SignInActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAuthBinding
     private lateinit var loginViewModel: SignInViewModel
-    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        FirebaseApp.initializeApp(this)
 
-        initFirebaseAuth()
         initViewModel()
         observeLoginFormState()
         observeLoginResult()
@@ -57,7 +56,8 @@ class SignInActivity : AppCompatActivity() {
                 setOnEditorActionListener { _, actionId, _ ->
                     when (actionId) {
                         EditorInfo.IME_ACTION_DONE ->
-                            login(
+                            loginViewModel.login(
+                                this@SignInActivity,
                                 email.text.toString(),
                                 password.text.toString()
                             )
@@ -67,7 +67,8 @@ class SignInActivity : AppCompatActivity() {
 
                 signIn.setOnClickListener {
                     loading.visibility = View.VISIBLE
-                    login(
+                    loginViewModel.login(
+                        this@SignInActivity,
                         email.text.toString(),
                         password.text.toString()
                     )
@@ -83,17 +84,12 @@ class SignInActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         // check if the user is already logged in
-        val currentUser = auth.currentUser
+        val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             loginViewModel.setLoggedInUser(currentUser)
         }
     }
 
-
-    private fun initFirebaseAuth() {
-        FirebaseApp.initializeApp(this)
-        auth = FirebaseAuth.getInstance()
-    }
 
     private fun initViewModel() {
         val factory = ViewModelFactory.getInstance()
@@ -116,17 +112,6 @@ class SignInActivity : AppCompatActivity() {
                 }
             }
         })
-    }
-
-    private fun login(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
-            if (task.isSuccessful) {
-                val currentUser = auth.currentUser
-                loginViewModel.setLoggedInUser(currentUser)
-            } else {
-                loginViewModel.setLoggedInUser(null)
-            }
-        }
     }
 
     private fun observeLoginResult() {

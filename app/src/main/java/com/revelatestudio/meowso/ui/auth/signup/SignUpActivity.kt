@@ -1,6 +1,7 @@
 package com.revelatestudio.meowso.ui.auth.signup
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -14,7 +15,6 @@ import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity
 import com.revelatestudio.meowso.util.afterTextChanged
-import com.revelatestudio.meowso.util.navigateToActivity
 import com.revelatestudio.meowso.util.showToast
 
 class SignUpActivity : AppCompatActivity() {
@@ -51,7 +51,9 @@ class SignUpActivity : AppCompatActivity() {
                 setOnEditorActionListener { _, actionId, _ ->
                     when (actionId) {
                         EditorInfo.IME_ACTION_DONE ->
-                            createAccount(
+                            signUpViewModel.createAccount(
+                                this@SignUpActivity,
+                                catName.text.toString(),
                                 email.text.toString(),
                                 password.text.toString()
                             )
@@ -61,7 +63,9 @@ class SignUpActivity : AppCompatActivity() {
 
                 signUp.setOnClickListener {
                     loading.visibility = View.VISIBLE
-                    createAccount(
+                    signUpViewModel.createAccount(
+                        this@SignUpActivity,
+                        catName.text.toString(),
                         email.text.toString(),
                         password.text.toString()
                     )
@@ -93,21 +97,6 @@ class SignUpActivity : AppCompatActivity() {
         })
     }
 
-    private fun createAccount(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    val currentUser = auth.currentUser
-                    if (currentUser != null) {
-                        val catName = binding.catName.text.toString()
-                        signUpViewModel.setDefaultUserProfile(currentUser, catName)
-                    }
-                } else {
-                    signUpViewModel.setSignUpResult(null)
-                }
-            }
-    }
-
 
     private fun observeSignUpResult() {
         signUpViewModel.signUpResult.observe(this@SignUpActivity, Observer { result ->
@@ -134,13 +123,15 @@ class SignUpActivity : AppCompatActivity() {
         showToast(resources.getString(errorString))
     }
 
-    private fun navigateToHomeActivity(model: LoggedInUser) {
-        val displayName = model.displayName
-
+    private fun navigateToHomeActivity(loggedInUser: LoggedInUser) {
+        val displayName = loggedInUser.displayName
         showToast("welcome $displayName")
-        navigateToActivity(this, SplashScreenActivity::class.java)
-
+        Intent(this, SplashScreenActivity::class.java).apply {
+            putExtra(SplashScreenActivity.EXTRA_USER_UID, loggedInUser.uid)
+            startActivity(this)
+        }
         setResult(Activity.RESULT_OK)
         finish()
+
     }
 }

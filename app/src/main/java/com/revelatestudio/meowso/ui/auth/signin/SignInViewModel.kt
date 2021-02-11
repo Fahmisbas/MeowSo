@@ -19,9 +19,17 @@ class SignInViewModel(private val repository: AppRepository) : ViewModel() {
     private val _loginResult = MutableLiveData<AuthResult>()
     val loginResult: LiveData<AuthResult> = _loginResult
 
+    fun login(activity: SignInActivity, email: String, password: String) {
+        repository.login(activity, email, password) { currentUser ->
+            if (currentUser != null) {
+                setLoggedInUser(currentUser)
+            }
+        }
+    }
+
     fun setLoggedInUser(currentUser: FirebaseUser?) {
         if (currentUser != null) {
-            repository.setInitialLoggedInUser(currentUser) {
+            repository.setLoggedInUser(currentUser) {
                 setLoginResult(it)
             }
         } else setLoginResult(null)
