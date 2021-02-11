@@ -10,8 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MeowSo">
         <activity android:name=".ui.auth.signup.SignUpActivity"></activity>
-        <activity
-            android:name=".ui.auth.signin.AuthActivity">
+        <activity android:name=".ui.auth.signin.SignInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
