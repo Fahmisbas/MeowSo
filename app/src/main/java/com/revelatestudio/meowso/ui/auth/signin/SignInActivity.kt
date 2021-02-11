@@ -1,6 +1,7 @@
 package com.revelatestudio.meowso.ui.auth.signin
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -10,22 +11,21 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivityAuthBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
-import com.revelatestudio.meowso.ui.navigation.NavigationActivity
+import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity
+import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity.Companion.EXTRA_USER_UID
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.navigateToActivity
 import com.revelatestudio.meowso.util.showToast
 
 
-class AuthActivity : AppCompatActivity() {
+class SignInActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAuthBinding
-    private lateinit var loginViewModel: AuthViewModel
+    private lateinit var loginViewModel: SignInViewModel
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,9 +73,8 @@ class AuthActivity : AppCompatActivity() {
                     )
                 }
             }
-
             signUp.setOnClickListener {
-                navigateToActivity(this@AuthActivity, SignUpActivity::class.java)
+                navigateToActivity(this@SignInActivity, SignUpActivity::class.java)
             }
         }
 
@@ -97,13 +96,12 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        val firebaseDb = FirebaseFirestore.getInstance()
-        val factory = ViewModelFactory.getInstance(firebaseDb)
-        loginViewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
+        val factory = ViewModelFactory.getInstance()
+        loginViewModel = ViewModelProvider(this, factory)[SignInViewModel::class.java]
     }
 
     private fun observeLoginFormState() {
-        loginViewModel.loginFormState.observe(this@AuthActivity, Observer { state ->
+        loginViewModel.loginFormState.observe(this@SignInActivity, Observer { state ->
             val loginState = state ?: return@Observer
 
             with(binding) {
@@ -126,13 +124,13 @@ class AuthActivity : AppCompatActivity() {
                 val currentUser = auth.currentUser
                 loginViewModel.setLoggedInUser(currentUser)
             } else {
-                loginViewModel.setLoginResult(null)
+                loginViewModel.setLoggedInUser(null)
             }
         }
     }
 
     private fun observeLoginResult() {
-        loginViewModel.authResult.observe(this@AuthActivity, Observer { result ->
+        loginViewModel.loginResult.observe(this@SignInActivity, Observer { result ->
             val loginResult = result ?: return@Observer
 
             binding.loading.visibility = View.GONE
@@ -149,12 +147,14 @@ class AuthActivity : AppCompatActivity() {
         })
     }
 
-    private fun navigateToHomeActivity(model: LoggedInUser) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        showToast("$welcome $displayName")
-        navigateToActivity(this, NavigationActivity::class.java)
+    private fun navigateToHomeActivity(loggedInUser: LoggedInUser) {
+        val displayName = loggedInUser.displayName
+        showToast("welcome $displayName")
 
+        Intent(this, SplashScreenActivity::class.java).apply {
+            putExtra(EXTRA_USER_UID, loggedInUser.uid)
+            startActivity(this)
+        }
         setResult(Activity.RESULT_OK)
         finish()
     }

@@ -20,19 +20,16 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     val signUpResult: LiveData<AuthResult> = _signUpResult
 
     fun setDefaultUserProfile(currentUser: FirebaseUser, catName: String) {
-        repository.setDefaultUserProfile(currentUser, catName) { data ->
+        repository.setInitialUserProfile(currentUser,catName) { data ->
             setSignUpResult(data)
         }
     }
 
     fun setSignUpResult(loggedInUser: LoggedInUser?) {
-        if (loggedInUser?.userId != null) {
-            repository.storeUserInfoIntoFireStoreDB(loggedInUser) { isSuccessful ->
+        if (loggedInUser?.uid != null) {
+            repository.storeInitialLoggedInUser(loggedInUser) { isSuccessful ->
                 if (isSuccessful) {
-                    loggedInUser.apply {
-                        _signUpResult.value = AuthResult(
-                            success = this
-                        )
+                    loggedInUser.apply { _signUpResult.value = AuthResult(success = this)
                     }
                 } else {
                     _signUpResult.value = AuthResult(error = R.string.login_failed)

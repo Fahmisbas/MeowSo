@@ -9,12 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
-import com.revelatestudio.meowso.ui.navigation.NavigationActivity
+import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.navigateToActivity
 import com.revelatestudio.meowso.util.showToast
@@ -73,8 +71,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        val firebaseDb = FirebaseFirestore.getInstance()
-        val factory = ViewModelFactory.getInstance(firebaseDb)
+        val factory = ViewModelFactory.getInstance()
         signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
     }
 
@@ -138,17 +135,12 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity(model: LoggedInUser) {
-        val welcome = getString(R.string.welcome)
         val displayName = model.displayName
 
-        showToast("$welcome $displayName")
-        navigateToActivity(this, NavigationActivity::class.java)
+        showToast("welcome $displayName")
+        navigateToActivity(this, SplashScreenActivity::class.java)
 
         setResult(Activity.RESULT_OK)
         finish()
-    }
-
-    companion object {
-
     }
 }

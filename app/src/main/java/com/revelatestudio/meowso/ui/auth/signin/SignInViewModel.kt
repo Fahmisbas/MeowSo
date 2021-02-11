@@ -11,23 +11,23 @@ import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
 import com.revelatestudio.meowso.data.repository.AppRepository
 
-class AuthViewModel(private val repository: AppRepository) : ViewModel() {
+class SignInViewModel(private val repository: AppRepository) : ViewModel() {
 
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
     private val _loginResult = MutableLiveData<AuthResult>()
-    val authResult: LiveData<AuthResult> = _loginResult
+    val loginResult: LiveData<AuthResult> = _loginResult
 
     fun setLoggedInUser(currentUser: FirebaseUser?) {
         if (currentUser != null) {
-            repository.setLoggedInUser(currentUser) {
+            repository.setInitialLoggedInUser(currentUser) {
                 setLoginResult(it)
             }
-        }
+        } else setLoginResult(null)
     }
 
-    fun setLoginResult(loggedInUser: LoggedInUser?) {
+    private fun setLoginResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser != null) {
             _loginResult.value = AuthResult(success = loggedInUser)
         } else {
