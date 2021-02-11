@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.revelatestudio.meowso.R
+import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivityNavigationBinding
 import com.revelatestudio.meowso.ui.explore.ExploreFragment
 import com.revelatestudio.meowso.ui.home.HomeFragment
@@ -15,14 +16,21 @@ import com.revelatestudio.meowso.ui.profile.ProfileFragment
 class NavigationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityNavigationBinding
+    private var loggedInUser : LoggedInUser? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNavigationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        loggedInUser = intent.getParcelableExtra(EXTRA_LOGGED_IN_PROFILE)
         setCurrentFragment(HomeFragment.newInstance())
 
+        selectedNavigationItem()
+
+    }
+
+    private fun selectedNavigationItem() {
         with(binding) {
             bottomNavigation.setOnNavigationItemSelectedListener { item ->
                 when (item.itemId) {
@@ -46,7 +54,10 @@ class NavigationActivity : AppCompatActivity() {
                     }
 
                     R.id.nav_profile -> {
-                        setCurrentFragment(ProfileFragment.newInstance())
+                        val user = loggedInUser
+                        if (user != null) {
+                            setCurrentFragment(ProfileFragment.newInstance(user))
+                        }
                         true
                     }
                     else -> false
@@ -61,5 +72,9 @@ class NavigationActivity : AppCompatActivity() {
             setReorderingAllowed(true)
             addToBackStack(null)
         }
+    }
+
+    companion object {
+        const val EXTRA_LOGGED_IN_PROFILE = "logged_in_profile"
     }
 }

@@ -16,6 +16,11 @@ class NotificationFragment : Fragment(R.layout.fragment_notification) {
     }
 
     companion object {
-        fun newInstance() = NotificationFragment()
+        @Volatile
+        private var instance : NotificationFragment? = null
+        fun newInstance() =
+            instance ?: synchronized(this) {
+                instance ?: NotificationFragment()
+            }
     }
 }

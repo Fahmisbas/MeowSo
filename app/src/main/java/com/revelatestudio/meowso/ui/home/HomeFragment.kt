@@ -17,6 +17,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
 
     companion object {
-        fun newInstance() = HomeFragment()
+        @Volatile
+        private var instance : HomeFragment? = null
+
+        fun newInstance() =
+            instance ?: synchronized(this) {
+                instance ?: HomeFragment()
+            }
     }
 }
