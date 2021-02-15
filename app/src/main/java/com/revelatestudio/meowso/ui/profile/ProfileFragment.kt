@@ -11,41 +11,20 @@ import com.revelatestudio.meowso.databinding.FragmentProfileBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 
 
-class ProfileFragment(private val loggedInUser: LoggedInUser) :
-    Fragment(R.layout.fragment_profile) {
+class ProfileFragment() : Fragment(R.layout.fragment_profile) {
 
     private lateinit var binding: FragmentProfileBinding
     private lateinit var profileViewModel: ProfileViewModel
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        initViewModel()
-        displayUserInfo()
-    }
+    private var loggedInUser: LoggedInUser? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentProfileBinding.bind(view)
-        initToolbar()
-        toolbarOptionMenu()
-    }
-
-    private fun initToolbar() {
-        with(binding) {
-            toolbarProfile.title = requireActivity().resources.getString(R.string.app_name)
-            tvDisplayName.text = loggedInUser.displayName
-        }
-    }
-
-    private fun toolbarOptionMenu() {
-        with(binding) {
-            toolbarProfile.inflateMenu(R.menu.menu_profile_toolbar)
-            toolbarProfile.setOnMenuItemClickListener { menu ->
-                if (menu.itemId == R.id.opt_logout) {
-                    // Sign out and Navigate to SignInActivity
-                    profileViewModel.logout(requireActivity())
-                }
-                true
+        if (arguments != null) {
+            loggedInUser = arguments?.getParcelable(LOGGED_IN_USER_DATA) as LoggedInUser?
+            if (loggedInUser != null) {
+                initViewModel()
+                displayUserInfo()
             }
         }
     }
@@ -57,8 +36,9 @@ class ProfileFragment(private val loggedInUser: LoggedInUser) :
 
     private fun displayUserInfo() {
         with(binding) {
-            loggedInUser.apply {
+            loggedInUser?.apply {
                 Glide.with(this@ProfileFragment).load(photoUrl).into(ivProfilePicture)
+                tvDisplayName.text = displayName
                 tvDisplayName.text = userName
                 tvFollowingCount.text = followersCount
                 tvFollowersCount.text = followersCount
@@ -68,11 +48,14 @@ class ProfileFragment(private val loggedInUser: LoggedInUser) :
     }
 
     companion object {
-        @Volatile
-        private var instance: ProfileFragment? = null
-        fun newInstance(loggedInUser: LoggedInUser) =
-            instance ?: synchronized(this) {
-                instance ?: ProfileFragment(loggedInUser)
-            }
+        private const val LOGGED_IN_USER_DATA = "logged_in_user_data"
+
+        fun newInstance(loggedInUser: LoggedInUser): ProfileFragment {
+            val fragment = ProfileFragment()
+            val bundle = Bundle()
+            bundle.putParcelable(LOGGED_IN_USER_DATA, loggedInUser)
+            fragment.arguments = bundle
+            return fragment
+        }
     }
 }

@@ -8,6 +8,7 @@ import com.revelatestudio.meowso.databinding.ActivitySplashScreenBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.navigation.NavigationActivity
 import com.revelatestudio.meowso.ui.navigation.NavigationActivity.Companion.EXTRA_LOGGED_IN_PROFILE
+import com.revelatestudio.meowso.util.showToast
 
 class SplashScreenActivity : AppCompatActivity() {
 
@@ -38,6 +39,8 @@ class SplashScreenActivity : AppCompatActivity() {
                         putExtra(EXTRA_LOGGED_IN_PROFILE, data)
                         startActivity(this)
                     }
+                }  else {
+                    showToast("gagal bor")
                 }
                 finish()
             })

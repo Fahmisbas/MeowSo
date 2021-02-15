@@ -9,7 +9,6 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.auth.FirebaseAuth
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
@@ -21,30 +20,44 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var signUpViewModel: SignUpViewModel
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ViewBinding initialization
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initViewModel()
-        observeSignUpFormState()
-        observeSignUpResult()
+        // ViewModel initialization
+        val factory = ViewModelFactory.getInstance()
+        signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
 
+
+        //View events
         with(binding) {
             email.afterTextChanged {
                 signUpViewModel.signUpDataChanged(
                     email.text.toString(),
-                    password.text.toString()
+                    password.text.toString(),
+                    confirmedPassword.text.toString()
                 )
+
             }
 
             password.apply {
                 password.afterTextChanged {
                     signUpViewModel.signUpDataChanged(
                         email.text.toString(),
-                        password.text.toString()
+                        password.text.toString(),
+                        confirmedPassword.text.toString()
+                    )
+                }
+
+                confirmedPassword.afterTextChanged {
+                    signUpViewModel.signUpDataChanged(
+                        email.text.toString(),
+                        password.text.toString(),
+                        confirmedPassword.text.toString()
                     )
                 }
 
@@ -74,9 +87,10 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    private fun initViewModel() {
-        val factory = ViewModelFactory.getInstance()
-        signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
+    override fun onStart() {
+        super.onStart()
+        observeSignUpFormState()
+        observeSignUpResult()
     }
 
     private fun observeSignUpFormState() {
@@ -92,6 +106,9 @@ class SignUpActivity : AppCompatActivity() {
                 }
                 if (loginState.passwordError != null) {
                     password.error = getString(loginState.passwordError)
+                }
+                if (loginState.confirmationPasswordError != null) {
+                    confirmedPassword.error = getString(loginState.confirmationPasswordError)
                 }
             }
         })

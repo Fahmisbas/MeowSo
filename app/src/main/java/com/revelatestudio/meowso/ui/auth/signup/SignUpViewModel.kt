@@ -20,13 +20,14 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     val signUpResult: LiveData<AuthResult> = _signUpResult
 
     fun createAccount(activity: SignUpActivity, catName: String, email: String, password: String) {
-        repository.createAccount(activity, email, password) { currentUser ->
-            if (currentUser != null) {
-                setUserAuthProfile(currentUser, catName)
+            repository.createAccount(activity, email, password) { currentUser ->
+                if (currentUser != null) {
+                    setUserAuthProfile(currentUser, catName)
+                }
             }
-        }
     }
 
+    // set default value for user
     private fun setUserAuthProfile(currentUser: FirebaseUser, catName: String) {
         repository.setUserAuthProfile(currentUser, catName) { data ->
             setSignUpResult(data)
@@ -35,11 +36,9 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
 
     private fun setSignUpResult(loggedInUser: LoggedInUser?) {
         if (loggedInUser?.uid != null) {
-            repository.storeLoggedInUser(loggedInUser) { isSuccessful ->
+            repository.storeSignUpUserData(loggedInUser) { isSuccessful ->
                 if (isSuccessful) {
-                    loggedInUser.apply {
-                        _signUpResult.value = AuthResult(success = this)
-                    }
+                    loggedInUser.apply { _signUpResult.value = AuthResult(success = this) }
                 } else {
                     _signUpResult.value = AuthResult(error = R.string.login_failed)
                 }
@@ -47,11 +46,13 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
         }
     }
 
-    fun signUpDataChanged(username: String, password: String) {
+    fun signUpDataChanged(username: String, password: String, confirmedPassword: String) {
         if (!isUserNameValid(username)) {
             _signUpForm.value = LoginFormState(usernameError = R.string.invalid_username)
         } else if (!isPasswordValid(password)) {
             _signUpForm.value = LoginFormState(passwordError = R.string.invalid_password)
+        } else if (!isPasswordConfirmed(password, confirmedPassword)) {
+            _signUpForm.value = LoginFormState(confirmationPasswordError = R.string.invalid_confirmation_password)
         } else {
             _signUpForm.value = LoginFormState(isDataValid = true)
         }
@@ -69,6 +70,10 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
+    }
+
+    private fun isPasswordConfirmed(password: String, confirmedPassword: String): Boolean {
+        return password == confirmedPassword
     }
 
 }

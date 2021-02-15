@@ -12,6 +12,7 @@ data class LoggedInUser(
     val email: String?,
     val photoUrl: String?,
     val profileDescription: String? = "",
+    var createdDate : String = "",
     val followingCount: String? = INITIAL_COUNT_VALUE,
     val followersCount: String? = INITIAL_COUNT_VALUE,
     val postsCount: String? = INITIAL_COUNT_VALUE

@@ -9,16 +9,23 @@ import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.ui.auth.signin.SignInActivity
 import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
 import com.revelatestudio.meowso.util.MappingHelper
+import com.revelatestudio.meowso.util.getCurrentDateTime
 import com.revelatestudio.meowso.util.removeWhiteSpace
+import com.revelatestudio.meowso.util.toStringFormat
 
-class AppRepository(private val firebaseDb: FirebaseFirestore, private val auth: FirebaseAuth) {
+typealias SuccessCallback = (Boolean) -> Unit
+typealias LoggedInUserCallback = (LoggedInUser?) -> Unit
+typealias FirebaseUserCallback = (FirebaseUser?) -> Unit
+typealias VoidCallback = () -> Unit
+
+class AppRepository(firebaseDb: FirebaseFirestore, private val auth: FirebaseAuth) {
 
     private val usersCollection = firebaseDb.collection(USERS_COLLECTION)
 
     fun setUserAuthProfile(
         currentUser: FirebaseUser,
         catName: String,
-        data: (LoggedInUser) -> Unit
+        callback: LoggedInUserCallback
     ) {
         val profileUpdates = UserProfileChangeRequest.Builder()
             .setDisplayName(catName)
@@ -27,13 +34,16 @@ class AppRepository(private val firebaseDb: FirebaseFirestore, private val auth:
         currentUser.updateProfile(profileUpdates).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 setLoggedInUser(currentUser) { loggedInUser ->
-                    data.invoke(loggedInUser)
+                    callback.invoke(loggedInUser)
                 }
-            }
+            } else callback.invoke(null)
+        }.addOnFailureListener { err ->
+            err.printStackTrace()
+            callback.invoke(null)
         }
     }
 
-    fun setLoggedInUser(user: FirebaseUser, data: (LoggedInUser) -> Unit) {
+    fun setLoggedInUser(user: FirebaseUser, callback: LoggedInUserCallback) {
         user.apply {
             val displayName = displayName
             val username = displayName?.removeWhiteSpace()
@@ -41,40 +51,45 @@ class AppRepository(private val firebaseDb: FirebaseFirestore, private val auth:
             val photoUrl = photoUrl.toString()
             if (displayName != null && username != null && userEmail != null) {
                 val loggedInUser = LoggedInUser(uid, displayName, username, userEmail, photoUrl)
-                data.invoke(loggedInUser)
-            }
+                callback.invoke(loggedInUser)
+            } else callback.invoke(null)
         }
     }
 
-    fun storeLoggedInUser(loggedInUser: LoggedInUser, isSuccessful: (Boolean) -> Unit) {
-        val userData = MappingHelper.loggedInUserObjectToMap(loggedInUser)
+    fun storeSignUpUserData(loggedInUser: LoggedInUser, callback: SuccessCallback) {
+        loggedInUser.createdDate = getCurrentDateTime().toStringFormat(DATE_FORMAT)
+        val userData: HashMap<String, String?> = MappingHelper.loggedInUserObjectToMap(loggedInUser)
         val uid = loggedInUser.uid
         usersCollection.document(uid).set(userData)
             .addOnSuccessListener {
-                isSuccessful.invoke(true)
+                callback.invoke(true)
             }
-            .addOnFailureListener {
-                isSuccessful.invoke(false)
+            .addOnFailureListener { err ->
+                err.printStackTrace()
+                callback.invoke(false)
             }
     }
 
-    fun getLoggedInUser(uid: String, data: (LoggedInUser?) -> Unit) {
+    fun getLoggedInUser(uid: String, callback: LoggedInUserCallback) {
         usersCollection.document(uid).get().addOnSuccessListener { document ->
             if (document.exists()) {
                 document?.let { snapshot ->
-                    val loggedInUser = MappingHelper.documentSnapshotMapToLoggedInUserObject(snapshot)
+                    val loggedInUser =
+                        MappingHelper.documentSnapshotMapToLoggedInUserObject(snapshot)
                     if (loggedInUser != null) {
-                        data.invoke(loggedInUser)
+                        callback.invoke(loggedInUser)
                     }
                 }
-            } else {
-                data.invoke(null)
-            }
+            } else callback.invoke(null)
+
+        }.addOnFailureListener { err ->
+            callback.invoke(null)
+            err.printStackTrace()
         }
     }
 
 
-    fun logout(callback: () -> Unit) {
+    fun logout(callback: VoidCallback) {
         auth.signOut()
         callback.invoke()
     }
@@ -83,17 +98,19 @@ class AppRepository(private val firebaseDb: FirebaseFirestore, private val auth:
         activity: SignInActivity,
         email: String,
         password: String,
-        userData: (FirebaseUser?) -> Unit
+        callback: FirebaseUserCallback
     ) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(activity) { task ->
             if (task.isSuccessful) {
                 val currentUser = auth.currentUser
                 if (currentUser != null) {
-                    userData.invoke(currentUser)
+                    callback.invoke(currentUser)
                 }
-            } else {
-                userData.invoke(null)
-            }
+            } else callback.invoke(null)
+
+        }.addOnFailureListener { err ->
+            callback.invoke(null)
+            err.printStackTrace()
         }
     }
 
@@ -101,24 +118,44 @@ class AppRepository(private val firebaseDb: FirebaseFirestore, private val auth:
         activity: SignUpActivity,
         email: String,
         password: String,
-        userData: (FirebaseUser?) -> Unit
+        callback: FirebaseUserCallback
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
                     val currentUser = auth.currentUser
                     if (currentUser != null) {
-                        userData.invoke(currentUser)
+                        callback.invoke(currentUser)
                     }
-                } else {
-                    userData.invoke(null)
-                }
+                } else callback.invoke(null)
+
+            }.addOnFailureListener { err ->
+                callback.invoke(null)
+                err.printStackTrace()
             }
+    }
+
+    fun checkEmailAvailability(email: String, callback: SuccessCallback, isTaskFinished : (Boolean) -> Unit, error: (Boolean) -> Unit) {
+        auth.fetchSignInMethodsForEmail(email).addOnCompleteListener { task ->
+            error.invoke(false)
+            isTaskFinished(false)
+            if (task.isSuccessful) {
+                val user = task.result?.signInMethods
+                if (user != null && user.isEmpty()) {
+                    callback.invoke(true)
+                } else callback.invoke(false)
+            }
+        }.addOnFailureListener { err ->
+            error.invoke(true)
+            isTaskFinished.invoke(true)
+            err.printStackTrace()
+        }
     }
 
 
     companion object {
         const val USERS_COLLECTION = "users"
+        private const val DATE_FORMAT = "dd/MM/yyyy HH:mm:ss"
 
         private const val default_profile_pic_token = "964cc4b4-682a-4209-900b-ee109f247c6a"
         private val DEFAULT_PROFILE_PICTURE_URL: String

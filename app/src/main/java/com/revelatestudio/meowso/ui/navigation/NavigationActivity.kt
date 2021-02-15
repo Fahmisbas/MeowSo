@@ -4,19 +4,23 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModelProvider
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.ActivityNavigationBinding
+import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.explore.ExploreFragment
 import com.revelatestudio.meowso.ui.home.HomeFragment
 import com.revelatestudio.meowso.ui.notification.NotificationFragment
 import com.revelatestudio.meowso.ui.profile.ProfileFragment
+import com.revelatestudio.meowso.util.showToast
 
 
 class NavigationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityNavigationBinding
-    private var loggedInUser : LoggedInUser? = null
+    private lateinit var navigationViewModel: NavigationViewModel
+    private var loggedInUser: LoggedInUser? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,13 +28,36 @@ class NavigationActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         loggedInUser = intent.getParcelableExtra(EXTRA_LOGGED_IN_PROFILE)
-        setCurrentFragment(HomeFragment.newInstance())
-
-        onNavigationItem()
-
+        if (loggedInUser == null) {
+            showToast("Something went wrong")
+            finish()
+        } else {
+            setCurrentFragment(HomeFragment.newInstance())
+            initViewModel()
+            onNavigationItemSelected()
+            onToolbarMenuItemSelected()
+        }
     }
 
-    private fun onNavigationItem() {
+    private fun initViewModel() {
+        val factory = ViewModelFactory.getInstance()
+        navigationViewModel = ViewModelProvider(this, factory)[NavigationViewModel::class.java]
+    }
+
+    private fun onToolbarMenuItemSelected() {
+        with(binding) {
+            toolbarProfile.title = resources.getString(R.string.app_name)
+            toolbarProfile.inflateMenu(R.menu.menu_profile_toolbar)
+            toolbarProfile.setOnMenuItemClickListener { menu ->
+                if (menu.itemId == R.id.opt_logout) {
+                    navigationViewModel.logout(this@NavigationActivity)
+                }
+                true
+            }
+        }
+    }
+
+    private fun onNavigationItemSelected() {
         with(binding) {
             bottomNavigation.setOnNavigationItemSelectedListener { item ->
                 when (item.itemId) {
@@ -57,6 +84,8 @@ class NavigationActivity : AppCompatActivity() {
                         val user = loggedInUser
                         if (user != null) {
                             setCurrentFragment(ProfileFragment.newInstance(user))
+                        } else {
+                            showToast("Failed to load data")
                         }
                         true
                     }
@@ -64,6 +93,11 @@ class NavigationActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
     }
 
     private fun setCurrentFragment(fragment: Fragment) {

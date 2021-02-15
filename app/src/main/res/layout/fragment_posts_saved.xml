@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:columnCount="3"
+    android:useDefaultMargins="true"
+    tools:context=".ui.profile.tabs.PostsSavedFragment">
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat3" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat2" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat" />
+
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat3" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat2" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat3" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat2" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat" />
+
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat3" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat2" />
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="110dp"
+        android:layout_columnWeight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dummycat" />
+
+
+</GridLayout>
+

@@ -1,4 +1,6 @@
 package com.revelatestudio.meowso.ui.explore
 
-class ExploreViewModel {
+import com.revelatestudio.meowso.data.repository.AppRepository
+
+class ExploreViewModel(private val repository: AppRepository) {
 }

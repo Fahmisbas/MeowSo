@@ -13,7 +13,7 @@ object MappingHelper {
                 KEY_USERNAME to userName,
                 KEY_EMAIl to email,
                 KEY_PHOTO_URL to photoUrl.toString(),
-                KEY_CREATED_DATE to getCurrentDateTime().toStringFormat(DATE_FORMAT),
+                KEY_CREATED_DATE to createdDate,
                 KEY_PROFILE_DESCRIPTION to profileDescription,
                 KEY_FOLLOWING_COUNT to followingCount,
                 KEY_FOLLOWERS_COUNT to followersCount,
@@ -51,6 +51,5 @@ object MappingHelper {
     private const val KEY_FOLLOWING_COUNT = "following_count"
     private const val KEY_FOLLOWERS_COUNT = "followers_count"
     private const val KEY_POSTS_COUNT = "posts_count"
-    private const val DATE_FORMAT = "dd/MM/yyyy HH:mm:ss"
 
 }

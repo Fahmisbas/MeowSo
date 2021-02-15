@@ -78,7 +78,6 @@ class SignInActivity : AppCompatActivity() {
                 navigateToActivity(this@SignInActivity, SignUpActivity::class.java)
             }
         }
-
     }
 
     override fun onStart() {

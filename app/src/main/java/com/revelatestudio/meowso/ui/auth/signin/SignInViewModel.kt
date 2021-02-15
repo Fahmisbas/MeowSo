@@ -23,7 +23,7 @@ class SignInViewModel(private val repository: AppRepository) : ViewModel() {
         repository.login(activity, email, password) { currentUser ->
             if (currentUser != null) {
                 setLoggedInUser(currentUser)
-            }
+            } else setLoggedInUser(null)
         }
     }
 
