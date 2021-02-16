@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import java.text.SimpleDateFormat
@@ -50,3 +51,19 @@ fun Date.toStringFormat(format: String, locale: Locale = Locale.getDefault()): S
 fun String.removeWhiteSpace(): String {
     return replace("\\s".toRegex(), "")
 }
+
+/**
+ * Show View
+ */
+fun View.visible() {
+    visibility = View.VISIBLE
+}
+/**
+ * Remove View
+ */
+fun View.gone() {
+    visibility = View.GONE
+}
+
+
+

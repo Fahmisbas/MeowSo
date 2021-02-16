@@ -4,11 +4,9 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseUser
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
+import com.revelatestudio.meowso.data.dataholder.auth.UserIdAvailability
 import com.revelatestudio.meowso.data.repository.AppRepository
 
 class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
@@ -16,64 +14,37 @@ class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
     private val _signUpForm = MutableLiveData<LoginFormState>()
     val signUpFormState: LiveData<LoginFormState> = _signUpForm
 
-    private val _signUpResult = MutableLiveData<AuthResult>()
-    val signUpResult: LiveData<AuthResult> = _signUpResult
+    private val _isEmailAvailable = MutableLiveData<UserIdAvailability?>()
+    val isEmailAvailable = _isEmailAvailable
 
-    fun createAccount(activity: SignUpActivity, catName: String, email: String, password: String) {
-            repository.createAccount(activity, email, password) { currentUser ->
-                if (currentUser != null) {
-                    setUserAuthProfile(currentUser, catName)
-                }
-            }
-    }
-
-    // set default value for user
-    private fun setUserAuthProfile(currentUser: FirebaseUser, catName: String) {
-        repository.setUserAuthProfile(currentUser, catName) { data ->
-            setSignUpResult(data)
-        }
-    }
-
-    private fun setSignUpResult(loggedInUser: LoggedInUser?) {
-        if (loggedInUser?.uid != null) {
-            repository.storeSignUpUserData(loggedInUser) { isSuccessful ->
-                if (isSuccessful) {
-                    loggedInUser.apply { _signUpResult.value = AuthResult(success = this) }
-                } else {
-                    _signUpResult.value = AuthResult(error = R.string.login_failed)
-                }
-            }
-        }
-    }
-
-    fun signUpDataChanged(username: String, password: String, confirmedPassword: String) {
-        if (!isUserNameValid(username)) {
-            _signUpForm.value = LoginFormState(usernameError = R.string.invalid_username)
-        } else if (!isPasswordValid(password)) {
-            _signUpForm.value = LoginFormState(passwordError = R.string.invalid_password)
-        } else if (!isPasswordConfirmed(password, confirmedPassword)) {
-            _signUpForm.value = LoginFormState(confirmationPasswordError = R.string.invalid_confirmation_password)
+    fun signUpDataChanged(email: String) {
+        if (!isEmailValid(email)) {
+            _signUpForm.value = LoginFormState(usernameError = R.string.invalid_email)
         } else {
             _signUpForm.value = LoginFormState(isDataValid = true)
         }
     }
 
-    // A placeholder username validation check
-    private fun isUserNameValid(username: String): Boolean {
-        return if (username.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
+    // A placeholder email validation check
+    private fun isEmailValid(email: String): Boolean {
+        return if (email.contains('@')) {
+            Patterns.EMAIL_ADDRESS.matcher(email).matches()
         } else {
-            username.isNotBlank()
+            email.isNotBlank()
         }
     }
 
-    // A placeholder password validation check
-    private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5
+    fun checkEmailAvailability(email: String) {
+        repository.checkEmailAvailability(email, isEmailAvailable = { isAvailable ->
+            if(isAvailable) {
+                _isEmailAvailable.value = UserIdAvailability(id = email, isAvailable = true)
+            } else if (!isAvailable){
+                _isEmailAvailable.value = UserIdAvailability(id = null, isAvailable = false)
+            } else {
+                _isEmailAvailable.value = null
+            }
+        }, onError = {
+            _isEmailAvailable.value = null
+        })
     }
-
-    private fun isPasswordConfirmed(password: String, confirmedPassword: String): Boolean {
-        return password == confirmedPassword
-    }
-
 }

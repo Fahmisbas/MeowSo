@@ -9,10 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MeowSo">
-        <activity android:name=".ui.auth.signup.SignUpActivity"></activity>
+        <activity android:name=".ui.auth.signup.userdetail.SignUpFinalStepActivity"></activity>
+        <activity android:name=".ui.auth.signup.SignUpActivity" />
         <activity android:name=".ui.auth.signin.SignInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

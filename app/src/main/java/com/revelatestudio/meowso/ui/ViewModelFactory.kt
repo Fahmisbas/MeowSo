@@ -6,6 +6,7 @@ import com.revelatestudio.meowso.data.repository.AppRepository
 import com.revelatestudio.meowso.di.Injection
 import com.revelatestudio.meowso.ui.auth.signin.SignInViewModel
 import com.revelatestudio.meowso.ui.auth.signup.SignUpViewModel
+import com.revelatestudio.meowso.ui.auth.signup.userdetail.SignUpFinalStepViewModel
 import com.revelatestudio.meowso.ui.navigation.NavigationViewModel
 import com.revelatestudio.meowso.ui.profile.ProfileViewModel
 import com.revelatestudio.meowso.ui.splashscreen.SplashScreenViewModel
@@ -29,6 +30,9 @@ class ViewModelFactory(private val repository: AppRepository) :
             }
             modelClass.isAssignableFrom(NavigationViewModel::class.java) -> {
                 NavigationViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(SignUpFinalStepViewModel::class.java) -> {
+                SignUpFinalStepViewModel(repository) as T
             }
             else -> throw Throwable("Unknown ViewModel class: " + modelClass.name)
         }

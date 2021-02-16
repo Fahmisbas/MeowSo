@@ -7,7 +7,7 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.ui.auth.signin.SignInActivity
-import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
+import com.revelatestudio.meowso.ui.auth.signup.userdetail.SignUpFinalStepActivity
 import com.revelatestudio.meowso.util.MappingHelper
 import com.revelatestudio.meowso.util.getCurrentDateTime
 import com.revelatestudio.meowso.util.removeWhiteSpace
@@ -115,7 +115,7 @@ class AppRepository(firebaseDb: FirebaseFirestore, private val auth: FirebaseAut
     }
 
     fun createAccount(
-        activity: SignUpActivity,
+        activity: SignUpFinalStepActivity,
         email: String,
         password: String,
         callback: FirebaseUserCallback
@@ -135,19 +135,21 @@ class AppRepository(firebaseDb: FirebaseFirestore, private val auth: FirebaseAut
             }
     }
 
-    fun checkEmailAvailability(email: String, callback: SuccessCallback, isTaskFinished : (Boolean) -> Unit, error: (Boolean) -> Unit) {
+    fun checkEmailAvailability(
+        email: String,
+        isEmailAvailable: SuccessCallback,
+        onError: SuccessCallback
+    ) {
         auth.fetchSignInMethodsForEmail(email).addOnCompleteListener { task ->
-            error.invoke(false)
-            isTaskFinished(false)
             if (task.isSuccessful) {
                 val user = task.result?.signInMethods
                 if (user != null && user.isEmpty()) {
-                    callback.invoke(true)
-                } else callback.invoke(false)
-            }
+                    isEmailAvailable.invoke(true)
+                } else isEmailAvailable.invoke(false)
+            } else isEmailAvailable.invoke(false)
+
         }.addOnFailureListener { err ->
-            error.invoke(true)
-            isTaskFinished.invoke(true)
+            onError.invoke(true)
             err.printStackTrace()
         }
     }
@@ -156,6 +158,7 @@ class AppRepository(firebaseDb: FirebaseFirestore, private val auth: FirebaseAut
     companion object {
         const val USERS_COLLECTION = "users"
         private const val DATE_FORMAT = "dd/MM/yyyy HH:mm:ss"
+        private const val DEBUG = "repository"
 
         private const val default_profile_pic_token = "964cc4b4-682a-4209-900b-ee109f247c6a"
         private val DEFAULT_PROFILE_PICTURE_URL: String
