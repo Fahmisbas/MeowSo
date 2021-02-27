@@ -10,10 +10,11 @@ import androidx.lifecycle.ViewModelProvider
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.databinding.ActivitySignUpBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
-import com.revelatestudio.meowso.ui.auth.signup.userdetail.SignUpFinalStepActivity
-import com.revelatestudio.meowso.ui.auth.signup.userdetail.SignUpFinalStepActivity.Companion.EXTRA_USER_EMAIL
+import com.revelatestudio.meowso.ui.auth.signup.signupfinalstep.SignUpFinalStepActivity
+import com.revelatestudio.meowso.ui.auth.signup.signupfinalstep.SignUpFinalStepActivity.Companion.EXTRA_USER_EMAIL
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.gone
+import com.revelatestudio.meowso.util.showToast
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -25,10 +26,7 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ViewModel initialization
-        val factory = ViewModelFactory.getInstance()
-        signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
-
+        initViewModel()
 
         //View events
         with(binding) {
@@ -46,6 +44,12 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
+    private fun initViewModel() {
+        val factory = ViewModelFactory.getInstance()
+        signUpViewModel = ViewModelProvider(this, factory)[SignUpViewModel::class.java]
+
+    }
+
     override fun onStart() {
         super.onStart()
         observeSignUpFormState()
@@ -57,10 +61,11 @@ class SignUpActivity : AppCompatActivity() {
         signUpViewModel.isEmailAvailable.observe(this, { result ->
             if (result != null) {
                 when (result.isAvailable) {
-                    true -> navigateSignUpUserDetail(result.id)
+                    true -> navigateToSignUpUserDetail(result.id)
                     false -> binding.email.error = getString(R.string.email_unavailable)
+                    null -> binding.email.error = getString(R.string.invalid_email)
                 }
-            } else binding.email.error = getString(R.string.invalid_email)
+            } else showToast(resources.getString(R.string.something_went_wrong))
             binding.loading.gone()
         })
     }
@@ -69,18 +74,17 @@ class SignUpActivity : AppCompatActivity() {
     private fun observeSignUpFormState() {
         signUpViewModel.signUpFormState.observe(this@SignUpActivity, Observer { state ->
             val loginState = state ?: return@Observer
-
             with(binding) {
                 // disable login button unless email is valid
                 btnNext.isEnabled = loginState.isDataValid
-                if (loginState.usernameError != null) {
-                    email.error = getString(loginState.usernameError)
+                if (loginState.emailError != null) {
+                    email.error = getString(loginState.emailError)
                 }
             }
         })
     }
 
-    private fun navigateSignUpUserDetail(email: String?) {
+    private fun navigateToSignUpUserDetail(email: String?) {
         Intent(this, SignUpFinalStepActivity::class.java).apply {
             putExtra(EXTRA_USER_EMAIL, email)
             startActivity(this)

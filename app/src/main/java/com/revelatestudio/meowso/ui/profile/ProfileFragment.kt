@@ -10,7 +10,6 @@ import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
 import com.revelatestudio.meowso.databinding.FragmentProfileBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 
-
 class ProfileFragment() : Fragment(R.layout.fragment_profile) {
 
     private lateinit var binding: FragmentProfileBinding
@@ -25,6 +24,9 @@ class ProfileFragment() : Fragment(R.layout.fragment_profile) {
             if (loggedInUser != null) {
                 initViewModel()
                 displayUserInfo()
+                if (loggedInUser?.photoUrl == null) {
+                    Glide.with(this).load(R.drawable.dummycat2).into(binding.ivProfilePicture)
+                }
             }
         }
     }
@@ -39,7 +41,6 @@ class ProfileFragment() : Fragment(R.layout.fragment_profile) {
             loggedInUser?.apply {
                 Glide.with(this@ProfileFragment).load(photoUrl).into(ivProfilePicture)
                 tvDisplayName.text = displayName
-                tvDisplayName.text = userName
                 tvFollowingCount.text = followersCount
                 tvFollowersCount.text = followersCount
                 tvPostsCount.text = postsCount

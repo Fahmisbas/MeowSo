@@ -10,12 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
+import com.revelatestudio.meowso.data.dataholder.auth.UserStatus
 import com.revelatestudio.meowso.databinding.ActivityAuthBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.auth.signup.SignUpActivity
 import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity
+import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity.Companion.EXTRA_USER_STATUS
 import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity.Companion.EXTRA_USER_UID
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.navigateToActivity
@@ -83,10 +83,7 @@ class SignInActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         // check if the user is already logged in
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            loginViewModel.setLoggedInUser(currentUser)
-        }
+        loginViewModel.checkIsUserLoggedIn()
     }
 
 
@@ -96,15 +93,15 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun observeLoginFormState() {
-        loginViewModel.loginFormState.observe(this@SignInActivity, Observer { state ->
+        loginViewModel.signInSignUpFormState.observe(this@SignInActivity, Observer { state ->
             val loginState = state ?: return@Observer
 
             with(binding) {
                 // disable login button unless both username / password is valid
                 signIn.isEnabled = loginState.isDataValid
 
-                if (loginState.usernameError != null) {
-                    email.error = getString(loginState.usernameError)
+                if (loginState.emailError != null) {
+                    email.error = getString(loginState.emailError)
                 }
                 if (loginState.passwordError != null) {
                     password.error = getString(loginState.passwordError)
@@ -131,14 +128,13 @@ class SignInActivity : AppCompatActivity() {
         })
     }
 
-    private fun navigateToHomeActivity(loggedInUser: LoggedInUser) {
-        val displayName = loggedInUser.displayName
-        showToast("welcome $displayName")
-
+    private fun navigateToHomeActivity(uid: String) {
         Intent(this, SplashScreenActivity::class.java).apply {
-            putExtra(EXTRA_USER_UID, loggedInUser.uid)
+            putExtra(EXTRA_USER_UID, uid)
+            putExtra(EXTRA_USER_STATUS, UserStatus.EXISTED_USER)
             startActivity(this)
         }
+
         setResult(Activity.RESULT_OK)
         finish()
     }

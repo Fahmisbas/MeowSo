@@ -12,7 +12,7 @@ object MappingHelper {
                 KEY_NAME to displayName,
                 KEY_USERNAME to userName,
                 KEY_EMAIl to email,
-                KEY_PHOTO_URL to photoUrl.toString(),
+                KEY_PHOTO_URL to photoUrl,
                 KEY_CREATED_DATE to createdDate,
                 KEY_PROFILE_DESCRIPTION to profileDescription,
                 KEY_FOLLOWING_COUNT to followingCount,
@@ -24,9 +24,9 @@ object MappingHelper {
 
      fun documentSnapshotMapToLoggedInUserObject(snapshot: DocumentSnapshot) : LoggedInUser? {
         snapshot.apply {
-            return getString(KEY_UID)?.let {
+            return getString(KEY_UID)?.let { uid ->
                 LoggedInUser(
-                    uid = it,
+                    uid = uid,
                     displayName = getString(KEY_NAME),
                     userName = getString(KEY_USERNAME),
                     email = getString(KEY_EMAIl),
@@ -38,14 +38,14 @@ object MappingHelper {
                 )
             }
         }
-    }
+     }
 
 
+    const val KEY_PHOTO_URL = "photo_url"
+    const val KEY_USERNAME = "username"
     private const val KEY_UID = "uid"
     private const val KEY_NAME = "name"
-    private const val KEY_USERNAME = "username"
     private const val KEY_EMAIl = "email"
-    private const val KEY_PHOTO_URL = "photo_url"
     private const val KEY_CREATED_DATE = "created_date"
     private const val KEY_PROFILE_DESCRIPTION = "description"
     private const val KEY_FOLLOWING_COUNT = "following_count"

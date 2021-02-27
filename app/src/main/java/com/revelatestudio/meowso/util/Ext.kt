@@ -7,7 +7,15 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.revelatestudio.meowso.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,40 +38,49 @@ fun <T> Activity.navigateToActivity(origin: Activity, destination: Class<T>) {
     }
 }
 
-/**
- * Show Toast message
- */
 fun Context.showToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
 
-/**
- * format date
- */
 fun Date.toStringFormat(format: String, locale: Locale = Locale.getDefault()): String {
     val formatter = SimpleDateFormat(format, locale)
     return formatter.format(this)
 }
 
-/**
- * Remove space in string
- */
 fun String.removeWhiteSpace(): String {
     return replace("\\s".toRegex(), "")
 }
 
-/**
- * Show View
- */
+
 fun View.visible() {
     visibility = View.VISIBLE
 }
-/**
- * Remove View
- */
+
 fun View.gone() {
     visibility = View.GONE
 }
+
+
+fun ImageView.loadImage(image: Any?, progressDrawable: CircularProgressDrawable) {
+    val options = RequestOptions()
+        .placeholder(progressDrawable)
+        .error(R.drawable.ic_launcher_background)
+
+    Glide.with(context)
+        .setDefaultRequestOptions(options)
+        .load(image)
+        .into(this)
+}
+
+fun <T> LifecycleOwner.observe(liveData: LiveData<T>, action: (t: T) -> Unit) {
+    liveData.observe(this, Observer {
+        it?.let { t ->
+            action(t)
+
+        }
+    })
+}
+
 
 
 

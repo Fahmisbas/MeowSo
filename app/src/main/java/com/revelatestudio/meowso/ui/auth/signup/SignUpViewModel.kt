@@ -5,43 +5,41 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.revelatestudio.meowso.R
-import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
+import com.revelatestudio.meowso.data.dataholder.auth.SignInSignUpFormState
 import com.revelatestudio.meowso.data.dataholder.auth.UserIdAvailability
 import com.revelatestudio.meowso.data.repository.AppRepository
 
 class SignUpViewModel(private val repository: AppRepository) : ViewModel() {
 
-    private val _signUpForm = MutableLiveData<LoginFormState>()
-    val signUpFormState: LiveData<LoginFormState> = _signUpForm
+    private val _signUpFormState = MutableLiveData<SignInSignUpFormState>()
+    val signUpFormState: LiveData<SignInSignUpFormState> = _signUpFormState
 
     private val _isEmailAvailable = MutableLiveData<UserIdAvailability?>()
-    val isEmailAvailable = _isEmailAvailable
+    val isEmailAvailable: LiveData<UserIdAvailability?> = _isEmailAvailable
 
     fun signUpDataChanged(email: String) {
         if (!isEmailValid(email)) {
-            _signUpForm.value = LoginFormState(usernameError = R.string.invalid_email)
+            _signUpFormState.value = SignInSignUpFormState(emailError = R.string.invalid_email)
         } else {
-            _signUpForm.value = LoginFormState(isDataValid = true)
+            _signUpFormState.value = SignInSignUpFormState(isDataValid = true)
         }
     }
 
     // A placeholder email validation check
     private fun isEmailValid(email: String): Boolean {
-        return if (email.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(email).matches()
-        } else {
-            email.isNotBlank()
-        }
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     fun checkEmailAvailability(email: String) {
-        repository.checkEmailAvailability(email, isEmailAvailable = { isAvailable ->
-            if(isAvailable) {
-                _isEmailAvailable.value = UserIdAvailability(id = email, isAvailable = true)
-            } else if (!isAvailable){
-                _isEmailAvailable.value = UserIdAvailability(id = null, isAvailable = false)
-            } else {
-                _isEmailAvailable.value = null
+        repository.checkEmailAvailability(email, isAvailableCallback = { isAvailable ->
+            if (isAvailable != null) {
+                if (isAvailable) {
+                    _isEmailAvailable.value = UserIdAvailability(id = email, isAvailable = true)
+                } else if (!isAvailable) {
+                    _isEmailAvailable.value = UserIdAvailability(id = null, isAvailable = false)
+                } else {
+                    _isEmailAvailable.value = UserIdAvailability(id = null, isAvailable = null)
+                }
             }
         }, onError = {
             _isEmailAvailable.value = null

@@ -27,13 +27,14 @@ class NavigationActivity : AppCompatActivity() {
         binding = ActivityNavigationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        loggedInUser = intent.getParcelableExtra(EXTRA_LOGGED_IN_PROFILE)
+        loggedInUser = intent.getParcelableExtra(EXTRA_LOGGED_IN_EXISTED_USER_PROFILE)
         if (loggedInUser == null) {
-            showToast("Something went wrong")
+            showToast(resources.getString(R.string.something_went_wrong))
             finish()
         } else {
             setCurrentFragment(HomeFragment.newInstance())
             initViewModel()
+
             onNavigationItemSelected()
             onToolbarMenuItemSelected()
         }
@@ -49,8 +50,8 @@ class NavigationActivity : AppCompatActivity() {
             toolbarProfile.title = resources.getString(R.string.app_name)
             toolbarProfile.inflateMenu(R.menu.menu_profile_toolbar)
             toolbarProfile.setOnMenuItemClickListener { menu ->
-                if (menu.itemId == R.id.opt_logout) {
-                    navigationViewModel.logout(this@NavigationActivity)
+                when (menu.itemId) {
+                    R.id.opt_logout -> navigationViewModel.logout(this@NavigationActivity)
                 }
                 true
             }
@@ -109,6 +110,6 @@ class NavigationActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val EXTRA_LOGGED_IN_PROFILE = "logged_in_profile"
+        const val EXTRA_LOGGED_IN_EXISTED_USER_PROFILE = "logged_in_profile"
     }
 }

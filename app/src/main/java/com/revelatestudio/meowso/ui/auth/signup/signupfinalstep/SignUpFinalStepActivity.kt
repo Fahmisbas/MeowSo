@@ -1,6 +1,5 @@
-package com.revelatestudio.meowso.ui.auth.signup.userdetail
+package com.revelatestudio.meowso.ui.auth.signup.signupfinalstep
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
@@ -8,10 +7,12 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
+import com.revelatestudio.meowso.R
+import com.revelatestudio.meowso.data.dataholder.auth.UserStatus
 import com.revelatestudio.meowso.databinding.ActivitySignUpFinalStepBinding
 import com.revelatestudio.meowso.ui.ViewModelFactory
 import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity
+import com.revelatestudio.meowso.ui.splashscreen.SplashScreenActivity.Companion.EXTRA_USER_STATUS
 import com.revelatestudio.meowso.util.afterTextChanged
 import com.revelatestudio.meowso.util.gone
 import com.revelatestudio.meowso.util.showToast
@@ -26,12 +27,11 @@ class SignUpFinalStepActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpFinalStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        // ViewModel initialization
-        val factory = ViewModelFactory.getInstance()
-        signUpViewModel = ViewModelProvider(this, factory)[SignUpFinalStepViewModel::class.java]
 
         val newUserEmail = intent.getStringExtra(EXTRA_USER_EMAIL)
+
         if (newUserEmail != null) {
+            initViewModel()
             with(binding) {
                 catName.afterTextChanged {
                     signUpViewModel.signUpDataChanged(
@@ -78,7 +78,17 @@ class SignUpFinalStepActivity : AppCompatActivity() {
                     }
                 }
             }
+        } else {
+            showToast(resources.getString(R.string.something_went_wrong))
+            finish()
         }
+    }
+
+    private fun initViewModel() {
+        // ViewModel initialization
+        val factory = ViewModelFactory.getInstance()
+        signUpViewModel = ViewModelProvider(this, factory)[SignUpFinalStepViewModel::class.java]
+
     }
 
     override fun onStart() {
@@ -115,10 +125,9 @@ class SignUpFinalStepActivity : AppCompatActivity() {
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
-
             if (loginResult.success != null) {
 
-                navigateToHomeActivity(loginResult.success)
+                navigateSplashScreenActivity(loginResult.success)
                 setResult(RESULT_OK)
                 //Complete and destroy login activity once successful
                 finish()
@@ -130,15 +139,12 @@ class SignUpFinalStepActivity : AppCompatActivity() {
         showToast(resources.getString(errorString))
     }
 
-    private fun navigateToHomeActivity(loggedInUser: LoggedInUser) {
-        val displayName = loggedInUser.displayName
-        showToast("welcome $displayName")
+    private fun navigateSplashScreenActivity(uid: String) {
         Intent(this, SplashScreenActivity::class.java).apply {
-            putExtra(SplashScreenActivity.EXTRA_USER_UID, loggedInUser.uid)
+            putExtra(SplashScreenActivity.EXTRA_USER_UID, uid)
+            putExtra(EXTRA_USER_STATUS, UserStatus.NEW_USER)
             startActivity(this)
         }
-        setResult(Activity.RESULT_OK)
-        finish()
     }
 
     companion object {

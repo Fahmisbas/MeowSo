@@ -4,66 +4,60 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseUser
 import com.revelatestudio.meowso.R
 import com.revelatestudio.meowso.data.dataholder.auth.AuthResult
-import com.revelatestudio.meowso.data.dataholder.auth.LoggedInUser
-import com.revelatestudio.meowso.data.dataholder.auth.LoginFormState
+import com.revelatestudio.meowso.data.dataholder.auth.SignInSignUpFormState
 import com.revelatestudio.meowso.data.repository.AppRepository
 
 class SignInViewModel(private val repository: AppRepository) : ViewModel() {
 
-    private val _loginForm = MutableLiveData<LoginFormState>()
-    val loginFormState: LiveData<LoginFormState> = _loginForm
+    private val _loginForm = MutableLiveData<SignInSignUpFormState>()
+    val signInSignUpFormState: LiveData<SignInSignUpFormState> = _loginForm
 
     private val _loginResult = MutableLiveData<AuthResult>()
     val loginResult: LiveData<AuthResult> = _loginResult
 
     fun login(activity: SignInActivity, email: String, password: String) {
-        repository.login(activity, email, password) { currentUser ->
-            if (currentUser != null) {
-                setLoggedInUser(currentUser)
-            } else setLoggedInUser(null)
+        repository.login(activity, email, password) { uid ->
+            if (uid != null) {
+                setLoginResult(uid)
+            } else setLoginResult(null)
         }
     }
 
-    fun setLoggedInUser(currentUser: FirebaseUser?) {
-        if (currentUser != null) {
-            repository.setLoggedInUser(currentUser) {
-                setLoginResult(it)
-            }
-        } else setLoginResult(null)
-    }
-
-    private fun setLoginResult(loggedInUser: LoggedInUser?) {
-        if (loggedInUser != null) {
-            _loginResult.value = AuthResult(success = loggedInUser)
+    private fun setLoginResult(uid: String?) {
+        if (uid != null) {
+            _loginResult.value = AuthResult(success = uid)
         } else {
             _loginResult.value = AuthResult(error = R.string.login_failed)
         }
     }
 
-    fun loginDataChanged(username: String, password: String) {
-        if (!isUserNameValid(username)) {
-            _loginForm.value = LoginFormState(usernameError = R.string.invalid_email)
+    fun loginDataChanged(email: String, password: String) {
+        if (!isEmailValid(email)) {
+            _loginForm.value = SignInSignUpFormState(emailError = R.string.invalid_email)
         } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
+            _loginForm.value = SignInSignUpFormState(passwordError = R.string.invalid_password)
         } else {
-            _loginForm.value = LoginFormState(isDataValid = true)
+            _loginForm.value = SignInSignUpFormState(isDataValid = true)
         }
     }
 
-    // A placeholder username validation check
-    private fun isUserNameValid(username: String): Boolean {
-        return if (username.contains('@')) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
-        } else {
-            username.isNotBlank()
-        }
+    // A placeholder email validation check
+    private fun isEmailValid(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
+    }
+
+    fun checkIsUserLoggedIn() {
+        repository.checkIsUserLoggedIn() { currentUser ->
+            if (currentUser != null) {
+                setLoginResult(currentUser.uid)
+            }
+        }
     }
 }

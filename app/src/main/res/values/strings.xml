@@ -12,8 +12,10 @@
     <string name="welcome">"Welcome !"</string>
     <string name="invalid_email">Not a valid E-mail address</string>
     <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_username">Not a valid Username</string>
     <string name="invalid_confirmation_password">Password and confirmation password do not match</string>
     <string name="email_unavailable">Your email is already registered</string>
+    <string name="username_unavailable">Username is not available</string>
 
     <string name="login_failed">"Login failed"</string>
     <string name="navigation_home">Home</string>
@@ -33,4 +35,5 @@
     <string name="opt_logout">Logout</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="action_next">Next</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>

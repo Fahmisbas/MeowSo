@@ -10,7 +10,7 @@ class SplashScreenViewModel(private val repository: AppRepository) : ViewModel()
 
     fun getLoggedInUserData(uid: String) : LiveData<LoggedInUser> {
         val loggedInUserData = MutableLiveData<LoggedInUser>()
-        repository.getLoggedInUser(uid) { userData ->
+        repository.getLoggedInUserData(uid) { userData ->
             if (userData != null) {
                 loggedInUserData.postValue(userData)
             }
